@@ -18,7 +18,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2019-02-27
+resolver: nightly-2019-06-17
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -39,7 +39,7 @@ resolver: nightly-2019-02-27
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)
 extra-deps:
-  - hmatrix-tests-0.19.0.0
+  #- hmatrix-tests-0.19.0.0
   - git: https://github.com/nilsalex/eigen.git
     commit: 7a9ecc9deb27d37c1a7e4a88cd369905941b4080
   #- git: https://github.com/nilsalex/hmatrix.git
@@ -52,7 +52,6 @@ extra-deps:
 flags:
   eigen:
     mkl: false
-  
 
 # Extra package databases containing global packages
 # extra-package-dbs: []

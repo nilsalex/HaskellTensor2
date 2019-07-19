@@ -35,7 +35,8 @@ module PerturbationTree2_3 (
     canonicalizeEvalMaps, getSyms, epsMap,
     decodeAnsatzForestEta, decodeAnsatzForestEpsilon, encodeAnsatzForestEpsilon, encodeAnsatzForestEta, flattenForestEpsilon, getIndSyms,
     getEpsForestFast, flattenForest, getAllIndsEta, getExtraEtaSyms, maxCycleNr, findExtraSym, Var(..),
-    areaList10IndsEtaRom, areaList10IndsEpsRom, areaList14IndsEtaRom, areaList14IndsEpsRom, filterList10Rom, symList10Rom, filterList14Rom, symList14Rom
+    areaList10IndsEtaRom, areaList10IndsEpsRom, areaList14IndsEtaRom, areaList14IndsEpsRom, filterList10Rom, symList10Rom, filterList14Rom, symList14Rom,
+    Eta (..), Epsilon (..), AnsatzForestEta, AnsatzForestEpsilon
 
     
 ) where
@@ -664,8 +665,8 @@ module PerturbationTree2_3 (
 
     evalNodeEta :: M.Map [Int] Int -> I.IntMap Int -> Eta -> Maybe Int
     evalNodeEta epsM iMap (Eta x y) 
-                | a == b && a == 0 = Just (-1) 
-                | a == b = Just 1
+                | a == b && a == 0 = Just 1 
+                | a == b = Just (-1)
                 | otherwise = Nothing
                  where 
                     [a,b] = [(I.!) iMap x, (I.!) iMap y]
@@ -680,7 +681,7 @@ module PerturbationTree2_3 (
     epsMap :: M.Map [Int] Int 
     epsMap = M.fromList $ map (\x -> (x, epsSign x)) $ permutations [0,1,2,3]
                 where
-                   epsSign [i,j,k,l] = (-1)^(length $  filter (==True) [j>i,k>i,l>i,k>j,l>j,l>k])
+                   epsSign [i,j,k,l] = (-1) * (-1)^(length $  filter (==True) [j>i,k>i,l>i,k>j,l>j,l>k])
 
     --basic tree eval function
 

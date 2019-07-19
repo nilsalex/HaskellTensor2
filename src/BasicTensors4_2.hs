@@ -42,7 +42,7 @@ module BasicTensors4_2 (
     randArea, randFlatArea, randAreaDerivative1, randAreaDerivative2, delta20, delta9, delta3,
     lorentzJ1, lorentzJ2, lorentzJ3, lorentzK1, lorentzK2, lorentzK3, interMetricArea, etaA, randMetric, genericMetric,
     interMetric, interI2, randAxon, genericAxon, eta, interI2Fac, interJ2, interJ2NoFac,
-    delta3Fac, delta9Fac, delta20Fac, interIAreaFac, interJAreaNoFac, interArea2
+    delta3Fac, delta9Fac, delta20Fac, interIAreaFac, interJArea, interJAreaNoFac, interArea2, interIArea
 
 ) where 
 
@@ -420,7 +420,8 @@ module BasicTensors4_2 (
                         k = [1..]
 
     flatArea :: ATens 0 1 0 0 0 0 Rational 
-    flatArea = fromListT6 $ map (\(i,v) -> ( (Empty, (singletonInd $ Ind20 i), Empty, Empty, Empty, Empty), v)) [(0,-1),(5,-1),(6,-1),(9,1),(11,-1),(12,-1),(15,1),(18,1),(20,1)]
+--    flatArea = fromListT6 $ map (\(i,v) -> ( (Empty, (singletonInd $ Ind20 i), Empty, Empty, Empty, Empty), v)) [(0,-1),(5,1),(6,-1),(9,-1),(11,-1),(12,1),(15,1),(18,1),(20,1)]
+    flatArea = fromListT6 $ map (\(i,v) -> ( (Empty, (singletonInd $ Ind20 i), Empty, Empty, Empty, Empty), v)) [(0,-1),(6,-1),(11,-1),(15,1),(18,1),(20,1)]
 
     flatInter :: ATens 0 1 0 0 1 1 Rational 
     flatInter = contrATens1 (0,1) $ interArea &* flatArea
