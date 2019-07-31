@@ -100,13 +100,14 @@ main = do
     let d4 = diffeo4 ans6AI ans10ABI
     let d5 = diffeo5 ans6AI
 
-    let system = d5 &> d4 &> d3 &> d2 &> (singletonTList d1)
+--    let system = d5 &> d4 &> d3 &> d2 &> (singletonTList d1)
+    let system = singletonTList $ diffeo1 ans8AB'
 
 --    putStrLn $ "DOFs      : " ++ (show r)
 --    putStrLn $ "my eqns   : " ++ (show $ tensorRank system)
 
---    sequence_ $ map putStrLn $ etaList ans6AIEta
---    sequence_ $ map putStrLn $ epsList ans6AIEps
+--    sequence_ $ map putStrLn $ etaList ans10ApBqEta
+--    sequence_ $ map putStrLn $ epsList ans10ApBqEps
     putStrLn $ unlines $ map (\((i, j), v) -> if denominator v /= 1
                                               then undefined
                                               else "(" ++ show i ++ ", " ++ show j ++ ") = " ++ show (numerator v) ++ ",")
