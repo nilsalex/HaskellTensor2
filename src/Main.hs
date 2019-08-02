@@ -100,8 +100,8 @@ main = do
     let d4 = diffeo4 ans6AI ans10ABI
     let d5 = diffeo5 ans6AI
 
---    let system = d5 &> d4 &> d3 &> d2 &> (singletonTList d1)
-    let system = singletonTList $ diffeo1 ans8AB'
+    let system = d5 &> d4 &> d3 &> d2 &> (singletonTList d1)
+--    let system = singletonTList $ diffeo1 ans8AB'
 
 --    putStrLn $ "DOFs      : " ++ (show r)
 --    putStrLn $ "my eqns   : " ++ (show $ tensorRank system)
