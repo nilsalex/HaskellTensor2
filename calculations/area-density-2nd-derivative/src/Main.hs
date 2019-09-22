@@ -9,7 +9,7 @@ import Math.Tensor.Examples.Gravity.Schwarzschild
 import Math.Tensor.Internal.LinearAlgebra
 
 import Numeric.LinearAlgebra.Data (toLists, fromLists, size)
-import Data.List (nub)
+import Data.List (nub, nubBy, findIndex)
 
 import Data.Ratio
 
@@ -82,10 +82,17 @@ main = do
                e10 &.&>
                (singletonTList6 e11)
 
-  let mat' = toMatrixT6 system
-  let mat = fromLists $ nub $ toLists mat'
+  let mat' = toLists $ toMatrixT6 system
 
-  print $ size mat'
+  let mat'' = filter (\rs -> any (/=0) rs) $ mat'
+
+  let mat''' = nubBy compRows mat''
+
+  let mat = fromLists mat'''
+
+  print $ length mat'
+  print $ length mat''
+  print $ length mat'''
   print $ size mat
 
   let mat2 = gaussian mat
@@ -95,3 +102,23 @@ main = do
   print $ tensorRank6 ansaetze
   print $ tensorRank6 system
   print $ length ps
+
+compRows :: (Fractional a, Eq a) => [a] -> [a] -> Bool
+compRows xs ys
+        | ix /= iy  = False
+        | x  == y   = xs == ys
+        | otherwise = xs == ys'
+    where
+        Just ix = findIndex (/= 0) xs
+        Just iy = findIndex (/= 0) ys
+        x = xs !! ix
+        y = ys !! iy
+        f = x/y
+        ys' = map (*f) ys
+
+normRow :: (Fractional a, Eq a) => [a] -> [a]
+normRow r = case ix of
+                Nothing -> r
+                Just x  -> map (/(r !! x)) r
+    where
+        ix = findIndex (/= 0) r
