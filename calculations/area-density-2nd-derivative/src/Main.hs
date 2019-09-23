@@ -8,9 +8,11 @@ import Math.Tensor.Examples.Gravity.Schwarzschild
 
 import Math.Tensor.Internal.LinearAlgebra
 
-import Numeric.LinearAlgebra.Data (toLists, fromLists, size)
+import Numeric.LinearAlgebra (rank)
+import Numeric.LinearAlgebra.Data (toLists, fromLists, size, cmap, (===), Matrix)
 import Data.List (nub, nubBy, findIndex)
 
+import Data.Int (Int64)
 import Data.Ratio
 
 import Control.Parallel.Strategies (parList, runEvalIO, rdeepseq)
@@ -82,43 +84,39 @@ main = do
                e10 &.&>
                (singletonTList6 e11)
 
-  let mat' = toLists $ toMatrixT6 system
-
+  let mat' = map (map round) $ toLists $ toMatrixT6 system :: [[Int64]]
   let mat'' = filter (\rs -> any (/=0) rs) $ mat'
-
   let mat''' = nubBy compRows mat''
+  let mat = fromLists $ mat'''
 
-  let mat = fromLists mat'''
+  let mat2 = gaussianFF mat
 
-  print $ length mat'
-  print $ length mat''
-  print $ length mat'''
-  print $ size mat
+  let ps = pivotsUFF mat2
 
-  let mat2 = gaussian mat
+  let matD = cmap fromIntegral mat :: Matrix Double
+  let mat2D = cmap fromIntegral mat2 :: Matrix Double
 
-  let ps = pivotsU mat2
-
-  print $ tensorRank6 ansaetze
-  print $ tensorRank6 system
+  print $ rank matD
+  print $ rank mat2D
+  print $ rank $ matD === mat2D
   print $ length ps
 
-compRows :: (Fractional a, Eq a) => [a] -> [a] -> Bool
+  print $ (toLists mat2) !! 187
+
+  --mapM_ print $ toLists mat2
+  --mapM_ print mat'''
+  return ()
+
+compRows :: (Integral a, Eq a) => [a] -> [a] -> Bool
 compRows xs ys
         | ix /= iy  = False
         | x  == y   = xs == ys
-        | otherwise = xs == ys'
+        | otherwise = xs' == ys'
     where
         Just ix = findIndex (/= 0) xs
         Just iy = findIndex (/= 0) ys
         x = xs !! ix
         y = ys !! iy
-        f = x/y
-        ys' = map (*f) ys
-
-normRow :: (Fractional a, Eq a) => [a] -> [a]
-normRow r = case ix of
-                Nothing -> r
-                Just x  -> map (/(r !! x)) r
-    where
-        ix = findIndex (/= 0) r
+        f = x%y
+        xs' = map fromIntegral xs
+        ys' = map ((*f) . fromIntegral) ys

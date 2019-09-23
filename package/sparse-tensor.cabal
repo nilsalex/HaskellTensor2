@@ -1,5 +1,5 @@
 name:                sparse-tensor
-version:             0.2.1.2
+version:             0.2.1.3
 synopsis:            typesafe tensor algebra library
 description:
     .
@@ -60,7 +60,8 @@ test-suite test-sparse-tensor
   hs-source-dirs:      test
   default-language:    Haskell2010
   main-is:             TestMain.hs
-  other-modules:       LinearAlgebra, IndList, Ansatz, Serialization
+  other-modules:       LinearAlgebra, LinearAlgebraFF, IndList,
+                       Ansatz, Serialization
   build-depends:       base              >= 4.9 && < 5,
                        hmatrix           >= 0.16.1 && < 0.21,
                        QuickCheck        >= 2.8.2 && < 2.14,

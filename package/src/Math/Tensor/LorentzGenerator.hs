@@ -117,7 +117,7 @@ import GHC.TypeLits
 import qualified Numeric.LinearAlgebra.Data as HM
 import qualified Numeric.LinearAlgebra as Matrix
 
-import Math.Tensor.Internal.LinearAlgebra (independentColumns)
+import Math.Tensor.Internal.LinearAlgebra (independentColumns, independentColumnsFF)
 
 import Math.Tensor
 
@@ -1442,7 +1442,7 @@ mkAnsatzTensorIncrementalAbs ord symmetries evalL = (ansEta, ansEps, tens)
 
 --now we start with the second way
 
-assocsToMat :: [[(Int,Int)]] -> HM.Matrix Double
+assocsToMat :: [[(Int,Int)]] -> HM.Matrix HM.Z
 assocsToMat l = HM.assoc (m,n) 0 l'
     where
         l' = concat $ zipWith (\r z -> map (\(x,y) -> ((z-1, x-1), fromIntegral y)) r) l [1..]
@@ -1456,7 +1456,7 @@ getPivots :: [[(Int,Int)]]  -> [Int]
 getPivots matList = map (1+) pivots
         where
             mat       = assocsToMat matList
-            pivots    = independentColumns mat
+            pivots    = independentColumnsFF mat
 
 --reduce linear deps in the ansätze
 
