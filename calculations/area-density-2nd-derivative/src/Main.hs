@@ -89,7 +89,7 @@ main = do
   let mat''' = nubBy compRows mat''
   let mat = fromLists $ mat'''
 
-  let mat2 = gaussianFF mat
+  let mat2 = rref mat
 
   let ps = pivotsUFF mat2
 
@@ -101,7 +101,7 @@ main = do
   print $ rank $ matD === mat2D
   print $ length ps
 
-  print $ (toLists mat2) !! 187
+  --print $ (toLists mat2) !! 187
 
   --mapM_ print $ toLists mat2
   --mapM_ print mat'''

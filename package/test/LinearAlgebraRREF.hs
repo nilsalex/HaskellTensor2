@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE LambdaCase #-}
 
-module LinearAlgebraFF (linearAlgebraFFTest) where
+module LinearAlgebraRREF (linearAlgebraRREFTest) where
 
 import Test.QuickCheck
 import Test.Tasty.QuickCheck
@@ -13,7 +13,7 @@ import System.Exit
 import Numeric.LinearAlgebra (rank)
 import qualified Numeric.LinearAlgebra.Data as Matrix
 
-import Math.Tensor.Internal.LinearAlgebra (independentColumnsFF, independentColumnsMatFF, gaussianFF, isref, verify)
+import Math.Tensor.Internal.LinearAlgebra (independentColumnsRREF, independentColumnsMatRREF, rref, isrref, verify)
 
 data SmallInt = S0 | S1 deriving (Show, Ord, Eq, Enum, Bounded)
 
@@ -49,8 +49,8 @@ prop_smallValues (MatrixData (Positive rows) (Positive cols) xs) =
     verify mat ref
   where
     mat  = (rows Matrix.>< cols) $ map fromSmall xs
-    mat' = independentColumnsMatFF mat
-    ref  = gaussianFF mat
+    mat' = independentColumnsMatRREF mat
+    ref  = rref mat
 
 prop_ints :: MatrixData Int -> Bool
 prop_ints (MatrixData (Positive rows) (Positive cols) xs) =
@@ -58,21 +58,20 @@ prop_ints (MatrixData (Positive rows) (Positive cols) xs) =
     verify mat ref
   where
     mat  = (rows Matrix.>< cols) $ map fromIntegral xs
-    mat' = independentColumnsMatFF mat
-    ref  = gaussianFF mat
+    mat' = independentColumnsMatRREF mat
+    ref  = rref mat
 
 prop_consec :: Positive Int -> Int -> Bool
 prop_consec (Positive dim') start =
-    icols == [0,1] &&
+    independentColumnsRREF mat == [0,1] &&
     verify mat ref
   where
-    dim   = dim' + 100
-    mat   = (dim Matrix.>< dim) $ map fromIntegral [start..]
-    icols = independentColumnsFF mat
-    ref   = gaussianFF mat
+    dim = dim' + 100
+    mat = (dim Matrix.>< dim) $ map fromIntegral [start..]
+    ref = rref mat
 
-testCase1 = localOption (QuickCheckMaxSize 10) $ testProperty "prop_smallValues" prop_smallValues
-testCase2 = localOption (QuickCheckMaxSize 10) $ testProperty "prop_ints" prop_ints
+testCase1 = testProperty "prop_smallValues" prop_smallValues
+testCase2 = testProperty "prop_ints" prop_ints
 testCase3 = testProperty "prop_consec" prop_consec
 
-linearAlgebraFFTest = testGroup "LinearAlgebraFFTest" [testCase1, testCase2, testCase3]
+linearAlgebraRREFTest = testGroup "LinearAlgebraRREFTest" [testCase1, testCase2, testCase3]

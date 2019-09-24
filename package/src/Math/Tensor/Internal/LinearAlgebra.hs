@@ -9,23 +9,29 @@
 -----------------------------------------------------------------------------
 
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Math.Tensor.Internal.LinearAlgebra (
 -- * Gaussian Elimination
 gaussianST, gaussianFFST,
 gaussian, gaussianFF,
+rrefST,
+rref,
 -- * Linearly Independent Columns
-independentColumns, independentColumnsFF,
-independentColumnsMat, independentColumnsMatFF,
+independentColumns, independentColumnsFF, independentColumnsRREF,
+independentColumnsMat, independentColumnsMatFF, independentColumnsMatRREF,
 -- * Pivots
 pivotsU, pivotsUFF,
-findPivotMax, findPivotMaxFF)
+findPivotMax, findPivotMaxFF, findRowPivot,
+isref, isrref, isrref', verify)
 
 where
 
 import Numeric.LinearAlgebra
 import Numeric.LinearAlgebra.Data
 import Numeric.LinearAlgebra.Devel
+
+import Debug.Trace (trace)
 
 import Data.List (maximumBy)
 
@@ -109,9 +115,9 @@ findPivotMaxFF m n i j mat
         do
           col      <- mapM (\i' -> do
                                     x <- readMatrix mat i' j
-                                    return (i', abs x))
+                                    return (i', x))
                       [i..m-1]
-          let nonZeros = filter ((/= 0) . abs . snd) col
+          let nonZeros = filter ((/= 0) . snd) col
           case nonZeros of
             []        -> if n == j+1
                          then return Nothing
@@ -138,6 +144,51 @@ findPivotMax m n i j mat
 
 -- gaussian elimination of sub matrix below position (i, j)
 
+findRowPivot :: Int -> Int -> Int -> Int -> STMatrix s Z -> ST s (Maybe Int)
+findRowPivot m n i j mat
+    | j + 1 > n       = error "out of bounds" -- return Nothing
+    | i + 1 > min m n = error "out of bounds" -- return Nothing
+    | otherwise =
+        do
+         row <- mapM (\j' -> do
+                              x <- readMatrix mat i j'
+                              return (j', x))
+                [0 .. j]
+         let nonZeros = filter ((/=0) . snd) row
+         case nonZeros of
+           []        -> return Nothing
+           (pj, _):_ -> return $ Just pj
+
+backwardFF' :: Int -> Int -> Int -> Int -> STMatrix s Z -> ST s ()
+backwardFF' m n i j mat
+      | i == 0 = return ()
+      | otherwise = do
+    mat' <- freezeMatrix mat
+    iPivot' <- findRowPivot m n i j mat
+    case iPivot' of
+        Nothing -> backwardFF' m n (i-1) j mat
+        Just pj -> do
+                    pv <- readMatrix mat i pj
+                    mapM_ (reduce pv pj) [0 .. i-1]
+                    backwardFF' m n (i-1) (pj-1) mat
+  where
+    reduce pv pj r = do
+                      Just pr <- findRowPivot m n r pj mat
+                      -- prv <- readMatrix mat r pr
+                      pjv <- readMatrix mat r pj
+                      if pjv == 0
+                        then return ()
+                        else
+                         let op1 = SCAL pv (Row r) (FromCol pr)
+                             op2 = AXPY (-pjv) i r (FromCol pj)
+                         in do
+                             rowOper op1 mat
+                             rowOper op2 mat
+                             g <- foldM (\acc c -> fmap (fromIntegral . gcd acc . fromIntegral) $ readMatrix mat r c) 0 [pr .. n-1]
+                             if g == 0
+                               then return()
+                               else mapM_ (\c -> modifyMatrix mat r c (`quot` g)) [pr .. n-1]
+
 gaussianFF' :: Int -> Int -> Int -> Int -> STMatrix s Z -> ST s ()
 gaussianFF' m n i j mat = do
     iPivot' <- findPivotMaxFF m n i j mat
@@ -154,8 +205,7 @@ gaussianFF' m n i j mat = do
                       if rv == 0
                         then return ()
                         else
-                         let --frac = -rv / pv
-                             op1 = SCAL pv (Row r) (FromCol p)
+                         let op1 = SCAL pv (Row r) (FromCol p)
                              op2 = AXPY (-rv) i r (FromCol p)
                          in do
                              rowOper op1 mat
@@ -195,6 +245,12 @@ gaussianFFST m n = gaussianFF' m n 0 0
 gaussianST :: Int -> Int -> STMatrix s Double -> ST s ()
 gaussianST m n = gaussian' m n 0 0
 
+rrefST :: Int -> Int -> STMatrix s Z -> ST s ()
+rrefST m n mat = do
+                    gaussianFF' m n 0 0 mat
+                    backwardFF' m n (r'-1) (n-1) mat
+    where
+        r' = min m n
 
 -- | Gaussian elimination as pure function. Involves a copy of the input matrix.
 --
@@ -212,6 +268,48 @@ gaussianST m n = gaussian' m n 0 0
 --  , 0.0, 0.0,  0.0, 1.6666666666666667 ]
 -- @
 --
+
+isref :: (Element a, Num a, Ord a, Container Vector a) => Matrix a -> Bool
+isref mat = case pivot of
+              []      -> True
+              (r,p):_ -> if r > 0
+                         then False
+                         else let leftMat  = mat ?? (Drop 1, Take (p+1))
+                                  rightMat = mat ?? (Drop 1, Drop (p+1))
+                                  leftZero = null $ find (/=0) leftMat
+                                  rightRef = isref rightMat
+                              in leftZero && rightRef
+    where
+        pivot = find (/=0) mat
+
+isrref' :: (Element a, Num a, Ord a, Container Vector a) => Int -> Matrix a -> Bool
+isrref' r mat = case pivot of
+              []       -> True
+              (r',p):_ -> if r' > 0
+                          then False
+                          else let leftMat  = subMat ?? (Drop 1, Take (p+1))
+                                   col      = mat ¿ [p]
+                                   colSingleton = case find (/=0) col of
+                                                    [_] -> True
+                                                    _   -> False
+                                   leftZero = null $ find (/=0) leftMat
+                                   nextRref = isrref' (r+1) mat
+                               in leftZero && colSingleton && nextRref
+    where
+        subMat = mat ?? (Drop r, All)
+        pivot  = find (/=0) subMat
+
+isrref :: (Element a, Num a, Ord a, Container Vector a) => Matrix a -> Bool
+isrref = isrref' 0
+
+rref :: Matrix Z -> Matrix Z
+rref mat = runST $ do
+    matST <- thawMatrix mat
+    rrefST m n matST
+    freezeMatrix matST
+  where
+    m = rows mat
+    n = cols mat
 
 gaussianFF :: Matrix Z -> Matrix Z
 gaussianFF mat = runST $ do
@@ -246,6 +344,11 @@ gaussian mat = runST $ do
 -- @
 --
 
+independentColumnsRREF :: Matrix Z -> [Int]
+independentColumnsRREF mat = pivotsUFF mat'
+    where
+        mat' = rref mat
+
 independentColumnsFF :: Matrix Z -> [Int]
 independentColumnsFF mat = pivotsUFF mat'
     where
@@ -273,6 +376,21 @@ independentColumns mat = pivotsU mat'
 --  , 3.0, 0.0,  1.0 ]
 -- @
 --
+
+verify :: Matrix Z -> Matrix Z -> Bool
+verify mat ref = rank1 == rank2 && rank1 == rank3
+    where
+        matD = fromZ mat :: Matrix Double
+        refD = fromZ ref :: Matrix Double
+        rank1 = rank matD
+        rank2 = rank refD
+        rank3 = rank $ matD === refD
+
+independentColumnsMatRREF :: Matrix Z -> Matrix Z
+independentColumnsMatRREF mat =
+  case independentColumnsRREF mat of
+    [] -> (rows mat >< 1) $ repeat 0
+    cs -> mat ¿ cs
 
 independentColumnsMatFF :: Matrix Z -> Matrix Z
 independentColumnsMatFF mat =
