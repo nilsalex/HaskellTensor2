@@ -71,8 +71,8 @@ prop_consec (Positive dim') start =
     icols = independentColumnsFF mat
     ref   = gaussianFF mat
 
-testCase1 = localOption (QuickCheckMaxSize 10) $ testProperty "prop_smallValues" prop_smallValues
-testCase2 = localOption (QuickCheckMaxSize 10) $ testProperty "prop_ints" prop_ints
-testCase3 = testProperty "prop_consec" prop_consec
+testCase1 = localOption (QuickCheckMaxSize 10) $ localOption (QuickCheckTests 100000) $ testProperty "prop_smallValues" prop_smallValues
+testCase2 = localOption (QuickCheckMaxSize 10) $ localOption (QuickCheckTests 100000) $ testProperty "prop_ints" prop_ints
+testCase3 = localOption (QuickCheckTests 1000) $ testProperty "prop_consec" prop_consec
 
 linearAlgebraFFTest = testGroup "LinearAlgebraFFTest" [testCase1, testCase2, testCase3]

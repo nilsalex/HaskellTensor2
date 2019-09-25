@@ -117,7 +117,7 @@ import GHC.TypeLits
 import qualified Numeric.LinearAlgebra.Data as HM
 import qualified Numeric.LinearAlgebra as Matrix
 
-import Math.Tensor.Internal.LinearAlgebra (independentColumns, independentColumnsFF)
+import Math.Tensor.Internal.LinearAlgebra (independentColumnsVerifiedFF)
 
 import Math.Tensor
 
@@ -1456,7 +1456,7 @@ getPivots :: [[(Int,Int)]]  -> [Int]
 getPivots matList = map (1+) pivots
         where
             mat       = assocsToMat matList
-            pivots    = independentColumnsFF mat
+            pivots    = independentColumnsVerifiedFF mat
 
 --reduce linear deps in the ansätze
 

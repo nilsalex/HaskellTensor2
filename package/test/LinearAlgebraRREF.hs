@@ -55,7 +55,7 @@ prop_smallValues (MatrixData (Positive rows) (Positive cols) xs) =
 prop_ints :: MatrixData Int -> Bool
 prop_ints (MatrixData (Positive rows) (Positive cols) xs) =
     rankFF mat' == rankFF mat &&
-    verify mat ref
+    (verify mat ref)
   where
     mat  = (rows Matrix.>< cols) $ map fromIntegral xs
     mat' = independentColumnsMatRREF mat
@@ -70,8 +70,8 @@ prop_consec (Positive dim') start =
     mat = (dim Matrix.>< dim) $ map fromIntegral [start..]
     ref = rref mat
 
-testCase1 = testProperty "prop_smallValues" prop_smallValues
-testCase2 = testProperty "prop_ints" prop_ints
-testCase3 = testProperty "prop_consec" prop_consec
+testCase1 = localOption (QuickCheckMaxSize 10) $ localOption (QuickCheckTests 100000) $ testProperty "prop_smallValues" prop_smallValues
+testCase2 = localOption (QuickCheckMaxSize 10) $ localOption (QuickCheckTests 100000) $ testProperty "prop_ints" prop_ints
+testCase3 = localOption (QuickCheckTests 1000) $ testProperty "prop_consec" prop_consec
 
 linearAlgebraRREFTest = testGroup "LinearAlgebraRREFTest" [testCase1, testCase2, testCase3]

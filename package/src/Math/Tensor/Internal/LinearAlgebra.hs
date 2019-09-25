@@ -19,6 +19,7 @@ rrefST,
 rref,
 -- * Linearly Independent Columns
 independentColumns, independentColumnsFF, independentColumnsRREF,
+independentColumnsVerifiedFF,
 independentColumnsMat, independentColumnsMatFF, independentColumnsMatRREF,
 -- * Pivots
 pivotsU, pivotsUFF,
@@ -351,6 +352,14 @@ independentColumnsRREF mat = pivotsUFF mat'
 
 independentColumnsFF :: Matrix Z -> [Int]
 independentColumnsFF mat = pivotsUFF mat'
+    where
+        mat' = gaussianFF mat
+
+independentColumnsVerifiedFF :: Matrix Z -> [Int]
+independentColumnsVerifiedFF mat
+        | isref mat' && verify mat mat'
+                     = pivotsUFF mat'
+        | otherwise  = error "could not verify row echelon form"
     where
         mat' = gaussianFF mat
 

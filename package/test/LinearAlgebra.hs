@@ -66,9 +66,9 @@ prop_consec (Positive dim') start =
     dim = dim' + 100
     mat = (dim Matrix.>< dim) $ map fromIntegral [start..]
 
-testCase1 = testProperty "prop_smallValues" prop_smallValues
-testCase2 = testProperty "prop_ints" prop_ints
-testCase3 = testProperty "prop_doubles" prop_doubles
-testCase4 = testProperty "prop_consec" prop_consec
+testCase1 = localOption (QuickCheckTests 10000) $ testProperty "prop_smallValues" prop_smallValues
+testCase2 = localOption (QuickCheckTests 10000) $ testProperty "prop_ints" prop_ints
+testCase3 = localOption (QuickCheckTests 10000) $ testProperty "prop_doubles" prop_doubles
+testCase4 = localOption (QuickCheckTests 1000) $ testProperty "prop_consec" prop_consec
 
 linearAlgebraTest = testGroup "LinearAlgebraTest" [testCase1, testCase2, testCase3, testCase4]

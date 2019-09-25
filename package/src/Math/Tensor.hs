@@ -742,13 +742,17 @@ instance TAdd a => TAdd (AnsVar a) where
     negateS (AnsVar v1) = AnsVar $ I.map negateS v1
     scaleZero (AnsVar v) = I.null v
 
-instance Prod (SField v) (SField v') => Prod (SField v) (AnsVar (SField v')) where
+instance (Num v, Eq v, Prod (SField v) (SField v')) => Prod (SField v) (AnsVar (SField v')) where
     type TProd (SField v) (AnsVar (SField v')) = AnsVar (TProd (SField v) (SField v'))
-    prod v (AnsVar v') = AnsVar $ I.map (prod v) v'
+    prod v (AnsVar v')
+        | scaleZero v = AnsVar I.empty
+        | otherwise   = AnsVar $ I.map (prod v) v'
 
-instance Prod (SField v') (SField v) => Prod (AnsVar (SField v)) (SField v') where
+instance (Num v', Eq v', Prod (SField v') (SField v)) => Prod (AnsVar (SField v)) (SField v') where
     type TProd (AnsVar (SField v)) (SField v') = AnsVar (TProd (SField v') (SField v))
-    prod (AnsVar v) v' = AnsVar $ I.map (prod v') v
+    prod (AnsVar v) v'
+        | scaleZero v' = AnsVar I.empty
+        | otherwise    = AnsVar $ I.map (prod v') v
 
 -- | Type for representation of functions as @'Tensor'@ values.
 newtype CFun a b = CFun (a -> b)
