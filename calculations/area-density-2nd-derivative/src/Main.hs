@@ -63,6 +63,8 @@ main = do
                  ans14_1' &.&>
                  (singletonTList6 ans14_2')
 
+  putStrLn $ "dimension of ansatz space   : " ++ show (tensorRank6 ansaetze)
+
   let e1 = eqn1 ans0' ans4'
   let e2 = eqn3 ans6'
   let e3 = eqn1A ans4' ans8'
@@ -86,6 +88,8 @@ main = do
                e9 &.&>
                e10 &.&>
                (singletonTList6 e11)
+
+  putStrLn $ "rank of system              : " ++ show (tensorRank6 system)
 
   let solution = solveSystem6 system ansaetze
 
