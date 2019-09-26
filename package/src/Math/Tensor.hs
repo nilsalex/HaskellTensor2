@@ -336,12 +336,12 @@ encodeTensor, decodeTensor,
 --
 -- ** Tensor Differentiation
 -- *** Partial Derivatives
-partial, partialSymbolic
+partial, partialSymbolic, solveSystem6, tryAsATens
 ) where
 
 import Data.Foldable (toList)
 import Control.Applicative (liftA2)
-import Data.List (sortOn, intersect)
+import Data.List (sortOn, intersect, findIndex, nubBy)
 import Data.Maybe (mapMaybe, fromMaybe)
 import Data.Proxy
 import Data.Type.Equality
@@ -359,6 +359,7 @@ import Codec.Compression.GZip (compress, decompress)
 --for Linear Algebra subroutines
 import qualified Numeric.LinearAlgebra.Data as HM
 import Numeric.LinearAlgebra (rank)
+import Math.Tensor.Internal.LinearAlgebra (rref, isrref, verify)
 
 --Length typed lists for the tensor indices.
 
@@ -2744,35 +2745,35 @@ _normalize ((a,b) : xs) = ((a,1) : map (\(x,y) -> (x,y / b)) xs,b)
 
 data TensList1 k1 v where
     EmptyTList1 :: TensList1 k1 v
-    AppendTList1 :: AbsTensor1 n1 k1 v -> TensList1 k1 v -> TensList1 k1 v
+    AppendTList1 :: KnownNat n1 => AbsTensor1 n1 k1 v -> TensList1 k1 v -> TensList1 k1 v
 
 data TensList2 k1 v where
     EmptyTList2 :: TensList2 k1 v
-    AppendTList2 :: AbsTensor2 n1 n2 k1 v -> TensList2 k1 v -> TensList2 k1 v
+    AppendTList2 :: (KnownNat n1, KnownNat n2) => AbsTensor2 n1 n2 k1 v -> TensList2 k1 v -> TensList2 k1 v
 
 data TensList3 k1 k2 v where
     EmptyTList3 :: TensList3 k1 k2 v
-    AppendTList3 :: AbsTensor3 n1 n2 n3 k1 k2 v -> TensList3 k1 k2 v -> TensList3 k1 k2 v
+    AppendTList3 :: (KnownNat n1, KnownNat n2, KnownNat n3) => AbsTensor3 n1 n2 n3 k1 k2 v -> TensList3 k1 k2 v -> TensList3 k1 k2 v
 
 data TensList4 k1 k2 v where
     EmptyTList4 :: TensList4 k1 k2 v
-    AppendTList4 :: AbsTensor4 n1 n2 n3 n4 k1 k2 v -> TensList4 k1 k2 v -> TensList4 k1 k2 v
+    AppendTList4 :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4) => AbsTensor4 n1 n2 n3 n4 k1 k2 v -> TensList4 k1 k2 v -> TensList4 k1 k2 v
 
 data TensList5 k1 k2 k3 v where
     EmptyTList5 :: TensList5 k1 k2 k3 v
-    AppendTList5 :: AbsTensor5 n1 n2 n3 n4 n5 k1 k2 k3 v -> TensList5 k1 k2 k3 v -> TensList5 k1 k2 k3 v
+    AppendTList5 :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5) => AbsTensor5 n1 n2 n3 n4 n5 k1 k2 k3 v -> TensList5 k1 k2 k3 v -> TensList5 k1 k2 k3 v
 
 data TensList6 k1 k2 k3 v where
     EmptyTList6 :: TensList6 k1 k2 k3 v
-    AppendTList6 :: AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 v -> TensList6 k1 k2 k3 v -> TensList6 k1 k2 k3 v
+    AppendTList6 :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6) => AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 v -> TensList6 k1 k2 k3 v -> TensList6 k1 k2 k3 v
 
 data TensList7 k1 k2 k3 k4 v where
     EmptyTList7 :: TensList7 k1 k2 k3 k4 v
-    AppendTList7 :: AbsTensor7 n1 n2 n3 n4 n5 n6 n7 k1 k2 k3 k4 v -> TensList7 k1 k2 k3 k4 v -> TensList7 k1 k2 k3 k4 v
+    AppendTList7 :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6, KnownNat n7) => AbsTensor7 n1 n2 n3 n4 n5 n6 n7 k1 k2 k3 k4 v -> TensList7 k1 k2 k3 k4 v -> TensList7 k1 k2 k3 k4 v
 
 data TensList8 k1 k2 k3 k4 v where
     EmptyTList8 :: TensList8 k1 k2 k3 k4 v
-    AppendTList8 :: AbsTensor8 n1 n2 n3 n4 n5 n6 n7 n8 k1 k2 k3 k4 v -> TensList8 k1 k2 k3 k4 v -> TensList8 k1 k2 k3 k4 v
+    AppendTList8 :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6, KnownNat n7, KnownNat n8) => AbsTensor8 n1 n2 n3 n4 n5 n6 n7 n8 k1 k2 k3 k4 v -> TensList8 k1 k2 k3 k4 v -> TensList8 k1 k2 k3 k4 v
 
 -- | Usual map function for heterogeneous tensor lists.
 
@@ -2800,6 +2801,11 @@ mapTensList6 :: (forall n1 n2 n3 n4 n5 n6. AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3
 mapTensList6 _ EmptyTList6 = []
 mapTensList6 f (AppendTList6 t l) = f t : mapTensList6 f l
 
+mapTensList6' :: (forall n1 n2 n3 n4 n5 n6. AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 v -> AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 v) ->
+                 TensList6 k1 k2 k3 v -> TensList6 k1 k2 k3 v
+mapTensList6' _ EmptyTList6 = EmptyTList6
+mapTensList6' f (AppendTList6 t l) = f t `AppendTList6` mapTensList6' f l
+
 mapTensList7 :: (forall n1 n2 n3 n4 n5 n6 n7. AbsTensor7 n1 n2 n3 n4 n5 n6 n7 k1 k2 k3 k4 v -> b ) -> TensList7 k1 k2 k3 k4 v -> [b]
 mapTensList7 _ EmptyTList7 = []
 mapTensList7 f (AppendTList7 t l) = f t : mapTensList7 f l
@@ -2810,11 +2816,11 @@ mapTensList8 f (AppendTList8 t l) = f t : mapTensList8 f l
 
 infixr 5 ...>
 
-(...>) :: AbsTensor1 n1 k1 v -> TensList1 k1 v -> TensList1 k1 v
+(...>) :: KnownNat n1 => AbsTensor1 n1 k1 v -> TensList1 k1 v -> TensList1 k1 v
 (...>) = AppendTList1
 
 
-singletonTList1 :: AbsTensor1 n1 k1 v -> TensList1 k1 v
+singletonTList1 :: KnownNat n1 => AbsTensor1 n1 k1 v -> TensList1 k1 v
 singletonTList1 t = t ...> EmptyTList1
 
 infixr 5  ...+
@@ -2828,10 +2834,10 @@ infixr 5  ...+
 
 infixr 5 ..&>
 
-(..&>) :: AbsTensor2 n1 n2 k1 v -> TensList2 k1 v -> TensList2 k1 v
+(..&>) :: (KnownNat n1, KnownNat n2) => AbsTensor2 n1 n2 k1 v -> TensList2 k1 v -> TensList2 k1 v
 (..&>) = AppendTList2
 
-singletonTList2 :: AbsTensor2 n1 n2 k1 v -> TensList2 k1 v
+singletonTList2 :: (KnownNat n1, KnownNat n2) => AbsTensor2 n1 n2 k1 v -> TensList2 k1 v
 singletonTList2 t = t ..&> EmptyTList2
 
 infixr 5 ..&+
@@ -2845,10 +2851,10 @@ infixr 5 ..&+
 
 infixr 5 .&.>
 
-(.&.>) :: AbsTensor3 n1 n2 n3 k1 k2 v -> TensList3 k1 k2 v -> TensList3 k1 k2 v
+(.&.>) :: (KnownNat n1, KnownNat n2, KnownNat n3) => AbsTensor3 n1 n2 n3 k1 k2 v -> TensList3 k1 k2 v -> TensList3 k1 k2 v
 (.&.>) = AppendTList3
 
-singletonTList3 :: AbsTensor3 n1 n2 n3 k1 k2 v -> TensList3 k1 k2 v
+singletonTList3 :: (KnownNat n1, KnownNat n2, KnownNat n3) => AbsTensor3 n1 n2 n3 k1 k2 v -> TensList3 k1 k2 v
 singletonTList3 t = t .&.> EmptyTList3
 
 infixr 5 .&.+
@@ -2862,10 +2868,10 @@ infixr 5 .&.+
 
 infixr 5 .&&>
 
-(.&&>) :: AbsTensor4 n1 n2 n3 n4 k1 k2 v -> TensList4 k1 k2 v -> TensList4 k1 k2 v
+(.&&>) :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4) => AbsTensor4 n1 n2 n3 n4 k1 k2 v -> TensList4 k1 k2 v -> TensList4 k1 k2 v
 (.&&>) = AppendTList4
 
-singletonTList4 :: AbsTensor4 n1 n2 n3 n4 k1 k2 v -> TensList4 k1 k2 v
+singletonTList4 :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4) => AbsTensor4 n1 n2 n3 n4 k1 k2 v -> TensList4 k1 k2 v
 singletonTList4 t = t .&&> EmptyTList4
 
 infixr 5 .&&+
@@ -2879,10 +2885,10 @@ infixr 5 .&&+
 
 infixr 5 &..>
 
-(&..>) :: AbsTensor5 n1 n2 n3 n4 n5 k1 k2 k3 v -> TensList5 k1 k2 k3 v -> TensList5 k1 k2 k3 v
+(&..>) :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5) => AbsTensor5 n1 n2 n3 n4 n5 k1 k2 k3 v -> TensList5 k1 k2 k3 v -> TensList5 k1 k2 k3 v
 (&..>) = AppendTList5
 
-singletonTList5 :: AbsTensor5 n1 n2 n3 n4 n5 k1 k2 k3 v -> TensList5 k1 k2 k3 v
+singletonTList5 :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5) => AbsTensor5 n1 n2 n3 n4 n5 k1 k2 k3 v -> TensList5 k1 k2 k3 v
 singletonTList5 t = t &..> EmptyTList5
 
 infixr 5 &..+
@@ -2896,10 +2902,10 @@ infixr 5 &..+
 
 infixr 5 &.&>
 
-(&.&>) :: AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 v -> TensList6 k1 k2 k3 v -> TensList6 k1 k2 k3 v
+(&.&>) :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6) => AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 v -> TensList6 k1 k2 k3 v -> TensList6 k1 k2 k3 v
 (&.&>) = AppendTList6
 
-singletonTList6 :: AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 v -> TensList6 k1 k2 k3 v
+singletonTList6 :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6) => AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 v -> TensList6 k1 k2 k3 v
 singletonTList6 t = t &.&> EmptyTList6
 
 infixr 5 &.&+
@@ -2913,10 +2919,10 @@ infixr 5 &.&+
 
 infixr 5 &&.>
 
-(&&.>) :: AbsTensor7 n1 n2 n3 n4 n5 n6 n7 k1 k2 k3 k4 v -> TensList7 k1 k2 k3 k4 v -> TensList7 k1 k2 k3 k4 v
+(&&.>) :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6, KnownNat n7) => AbsTensor7 n1 n2 n3 n4 n5 n6 n7 k1 k2 k3 k4 v -> TensList7 k1 k2 k3 k4 v -> TensList7 k1 k2 k3 k4 v
 (&&.>) = AppendTList7
 
-singletonTList7 :: AbsTensor7 n1 n2 n3 n4 n5 n6 n7 k1 k2 k3 k4 v -> TensList7 k1 k2 k3 k4 v
+singletonTList7 :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6, KnownNat n7) => AbsTensor7 n1 n2 n3 n4 n5 n6 n7 k1 k2 k3 k4 v -> TensList7 k1 k2 k3 k4 v
 singletonTList7 t = t &&.> EmptyTList7
 
 infixr 5 &&.+
@@ -2930,10 +2936,10 @@ infixr 5 &&.+
 
 infixr 5 &&&>
 
-(&&&>) :: AbsTensor8 n1 n2 n3 n4 n5 n6 n7 n8 k1 k2 k3 k4 v -> TensList8 k1 k2 k3 k4 v -> TensList8 k1 k2 k3 k4 v
+(&&&>) :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6, KnownNat n7, KnownNat n8) => AbsTensor8 n1 n2 n3 n4 n5 n6 n7 n8 k1 k2 k3 k4 v -> TensList8 k1 k2 k3 k4 v -> TensList8 k1 k2 k3 k4 v
 (&&&>) = AppendTList8
 
-singletonTList8 :: AbsTensor8 n1 n2 n3 n4 n5 n6 n7 n8 k1 k2 k3 k4 v -> TensList8 k1 k2 k3 k4 v
+singletonTList8 :: (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6, KnownNat n7, KnownNat n8) => AbsTensor8 n1 n2 n3 n4 n5 n6 n7 n8 k1 k2 k3 k4 v -> TensList8 k1 k2 k3 k4 v
 singletonTList8 t = t &&&> EmptyTList8
 
 infixr 5 &&&+
@@ -3037,57 +3043,134 @@ toMatrixT8 = assocsToMatrix . toMatListT8
 
 --rank of the tensor can be computed with rank Sol.FullPivLU or Sol.JakobiSVD
 
-tensorRank1' :: (TIndex k1, Real a, Real a) => AbsTensor1 n1 k1 (AnsVar (SField a)) -> Int
+tensorRank1' :: (TIndex k1, Real a, Real a, KnownNat n1) => AbsTensor1 n1 k1 (AnsVar (SField a)) -> Int
 tensorRank1' t = rank $ toMatrixT1 (singletonTList1 t)
 
 tensorRank1 :: (TIndex k1, Real a) => TensList1 k1 (AnsVar (SField a)) -> Int
 tensorRank1 t = rank $ toMatrixT1 t
 
 
-tensorRank2' :: (TIndex k1, Real a) => AbsTensor2 n1 n2 k1 (AnsVar (SField a)) -> Int
+tensorRank2' :: (TIndex k1, Real a, KnownNat n1, KnownNat n2) => AbsTensor2 n1 n2 k1 (AnsVar (SField a)) -> Int
 tensorRank2' t = rank $ toMatrixT2 (singletonTList2 t)
 
 tensorRank2 :: (TIndex k1, Real a) => TensList2 k1 (AnsVar (SField a)) -> Int
 tensorRank2 t = rank $ toMatrixT2 t
 
 
-tensorRank3' :: (TIndex k1, TIndex k2, Real a) => AbsTensor3 n1 n2 n3 k1 k2 (AnsVar (SField a)) -> Int
+tensorRank3' :: (TIndex k1, TIndex k2, Real a, KnownNat n1, KnownNat n2, KnownNat n3) => AbsTensor3 n1 n2 n3 k1 k2 (AnsVar (SField a)) -> Int
 tensorRank3' t = rank $ toMatrixT3 (singletonTList3 t)
 
 tensorRank3 :: (TIndex k1, TIndex k2, Real a) =>  TensList3 k1 k2 (AnsVar (SField a)) -> Int
 tensorRank3 t = rank $ toMatrixT3 t
 
 
-tensorRank4' :: (TIndex k1, TIndex k2, Real a) =>  AbsTensor4 n1 n2 n3 n4 k1 k2 (AnsVar (SField a)) -> Int
+tensorRank4' :: (TIndex k1, TIndex k2, Real a, KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4) =>  AbsTensor4 n1 n2 n3 n4 k1 k2 (AnsVar (SField a)) -> Int
 tensorRank4' t = rank $ toMatrixT4 (singletonTList4 t)
 
 tensorRank4 :: (TIndex k1, TIndex k2, Real a) =>  TensList4 k1 k2 (AnsVar (SField a)) -> Int
 tensorRank4 t = rank $ toMatrixT4 t
 
 
-tensorRank5' :: (TIndex k1, TIndex k2, TIndex k3, Real a) =>  AbsTensor5 n1 n2 n3 n4 n5 k1 k2 k3 (AnsVar (SField a)) -> Int
+tensorRank5' :: (TIndex k1, TIndex k2, TIndex k3, Real a, KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5) =>  AbsTensor5 n1 n2 n3 n4 n5 k1 k2 k3 (AnsVar (SField a)) -> Int
 tensorRank5' t = rank $ toMatrixT5 (singletonTList5 t)
 
 tensorRank5 :: (TIndex k1, TIndex k2, TIndex k3, Real a) => TensList5 k1 k2 k3 (AnsVar (SField a)) -> Int
 tensorRank5 t = rank $ toMatrixT5 t
 
 
-tensorRank6' :: (TIndex k1, TIndex k2, TIndex k3, Real a) => AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 (AnsVar (SField a)) -> Int
+tensorRank6' :: (TIndex k1, TIndex k2, TIndex k3, Real a, KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6) => AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 (AnsVar (SField a)) -> Int
 tensorRank6' t = rank $ toMatrixT6 (singletonTList6 t)
 
 tensorRank6 :: (TIndex k1, TIndex k2, TIndex k3, Real a) => TensList6 k1 k2 k3 (AnsVar (SField a)) -> Int
 tensorRank6 t = rank $ toMatrixT6 t
 
 
-tensorRank7' :: (TIndex k1, TIndex k2, TIndex k3, TIndex k4, Real a) => AbsTensor7 n1 n2 n3 n4 n5 n6 n7 k1 k2 k3 k4 (AnsVar (SField a)) -> Int
+tensorRank7' :: (TIndex k1, TIndex k2, TIndex k3, TIndex k4, Real a, KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6, KnownNat n7) => AbsTensor7 n1 n2 n3 n4 n5 n6 n7 k1 k2 k3 k4 (AnsVar (SField a)) -> Int
 tensorRank7' t = rank $ toMatrixT7 (singletonTList7 t)
 
 tensorRank7 :: (TIndex k1, TIndex k2, TIndex k3, TIndex k4, Real a) => TensList7 k1 k2 k3 k4 (AnsVar (SField a)) -> Int
 tensorRank7 t = rank $ toMatrixT7 t
 
 
-tensorRank8' :: (TIndex k1, TIndex k2, TIndex k3, TIndex k4, Real a) => AbsTensor8 n1 n2 n3 n4 n5 n6 n7 n8 k1 k2 k3 k4 (AnsVar (SField a)) -> Int
+tensorRank8' :: (TIndex k1, TIndex k2, TIndex k3, TIndex k4, Real a, KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6, KnownNat n7, KnownNat n8) => AbsTensor8 n1 n2 n3 n4 n5 n6 n7 n8 k1 k2 k3 k4 (AnsVar (SField a)) -> Int
 tensorRank8' t = rank $ toMatrixT8 (singletonTList8 t)
 
 tensorRank8 :: (TIndex k1, TIndex k2, TIndex k3, TIndex k4, Real a) => TensList8 k1 k2 k3 k4 (AnsVar (SField a)) -> Int
 tensorRank8 t = rank $ toMatrixT8 t
+
+type Solution = I.IntMap AnsVarR
+
+fromRref :: HM.Matrix HM.Z -> Solution
+fromRref ref = I.fromList assocs
+    where
+        rows   = HM.toLists ref
+        assocs = mapMaybe fromRow rows
+
+fromRow :: Integral a => [a] -> Maybe (Int, AnsVarR)
+fromRow xs = case assocs of
+               []             -> Nothing
+               [(i, _)]       -> Just (i, AnsVar I.empty)
+               (i, v):assocs' -> let assocs'' = map (\(i, v') -> (i, SField $ - (fromIntegral v') / (fromIntegral v))) assocs'
+                                 in Just (i, AnsVar $ I.fromList assocs'')
+    where
+        assocs = filter ((/=0) . snd) $ zip [1..] xs
+
+applySolution :: Solution -> AnsVarR -> AnsVarR
+applySolution s (AnsVar m) = AnsVar $
+                             I.foldlWithKey' (\m' i sub -> let AnsVar m'' = AnsVar m' `addS` sub
+                                                           in I.delete i m'') m s'
+    where
+        s' = I.intersectionWith (\row v -> v `prod` row) s m
+
+solveTensor6 :: (TIndex k1, TIndex k2, TIndex k3) =>
+                Solution ->
+                AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 AnsVarR ->
+                AbsTensor6 n1 n2 n3 n4 n5 n6 k1 k2 k3 AnsVarR
+solveTensor6 sol t = removeZeros6 $ mapTo6 (applySolution sol) t
+
+solveSystem6 :: (TIndex k1, TIndex k2, TIndex k3) =>
+                TensList6 k1 k2 k3 AnsVarR ->
+                TensList6 k1 k2 k3 AnsVarR ->
+                TensList6 k1 k2 k3 AnsVarR
+solveSystem6 system indets
+        | isFractional  = error "system is not fraction-free"
+        | wrongSolution = error "Wrong solution found. May be an Int64 overflow."
+        | otherwise     = mapTensList6' (solveTensor6 sol) indets
+    where
+        matDoubles   = HM.toLists $ toMatrixT6 system
+        isFractional = any (\x -> snd (properFraction x) /= 0) $ concat matDoubles
+        lZ       = map (map round) matDoubles :: [[HM.Z]]
+        lNonZero = filter (\rs -> any (/=0) rs) $ lZ
+        lUniques = nubBy compRows lNonZero
+        mat      = HM.fromLists lUniques
+        ref      = rref mat
+        wrongSolution = not (isrref ref && verify mat ref)
+        sol      = fromRref ref
+
+compRows :: (Integral a, Eq a) => [a] -> [a] -> Bool
+compRows xs ys
+        | ix /= iy  = False
+        | x  == y   = xs == ys
+        | otherwise = xs' == ys'
+    where
+        Just ix = findIndex (/= 0) xs
+        Just iy = findIndex (/= 0) ys
+        x = xs !! ix
+        y = ys !! iy
+        f = (fromIntegral x)/(fromIntegral y)
+        xs' = map fromIntegral xs
+        ys' = map ((*f) . fromIntegral) ys
+
+tryAsATens :: forall n1 n2 n3 n4 n5 n6 m1 m2 m3 m4 m5 m6 a b.
+         (KnownNat n1, KnownNat n2, KnownNat n3, KnownNat n4, KnownNat n5, KnownNat n6,
+          KnownNat m1, KnownNat m2, KnownNat m3, KnownNat m4, KnownNat m5, KnownNat m6) =>
+             ATens m1 m2 m3 m4 m5 m6 b -> ATens n1 n2 n3 n4 n5 n6 a -> Maybe (ATens m1 m2 m3 m4 m5 m6 a)
+tryAsATens _ t =
+        do
+         Refl <- sameNat (Proxy @m1) (Proxy @n1)
+         Refl <- sameNat (Proxy @m2) (Proxy @n2)
+         Refl <- sameNat (Proxy @m3) (Proxy @n3)
+         Refl <- sameNat (Proxy @m4) (Proxy @n4)
+         Refl <- sameNat (Proxy @m5) (Proxy @n5)
+         Refl <- sameNat (Proxy @m6) (Proxy @n6)
+         return t
