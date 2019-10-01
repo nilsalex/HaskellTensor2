@@ -336,12 +336,12 @@ encodeTensor, decodeTensor,
 --
 -- ** Tensor Differentiation
 -- *** Partial Derivatives
-partial, partialSymbolic, solveSystem6, tryAsATens
+partial, partialSymbolic, solveSystem6, redefineVarsSystem6, tryAsATens
 ) where
 
 import Data.Foldable (toList)
 import Control.Applicative (liftA2)
-import Data.List (sortOn, intersect, findIndex, nubBy)
+import Data.List (sortOn, intersect, findIndex, nubBy, nub)
 import Data.Maybe (mapMaybe, fromMaybe)
 import Data.Proxy
 import Data.Type.Equality
@@ -3135,7 +3135,7 @@ solveSystem6 :: (TIndex k1, TIndex k2, TIndex k3) =>
 solveSystem6 system indets
         | isFractional  = error "system is not fraction-free"
         | wrongSolution = error "Wrong solution found. May be an Int64 overflow."
-        | otherwise     = mapTensList6' (solveTensor6 sol) indets
+        | otherwise     = system'
     where
         matDoubles   = HM.toLists $ toMatrixT6 system
         isFractional = any (\x -> snd (properFraction x) /= 0) $ concat matDoubles
@@ -3146,6 +3146,16 @@ solveSystem6 system indets
         ref      = rref mat
         wrongSolution = not (isrref ref && verify mat ref)
         sol      = fromRref ref
+        system'  = mapTensList6' (solveTensor6 sol) indets
+
+redefineVarsSystem6 :: (TIndex k1, TIndex k2, TIndex k3) =>
+                       TensList6 k1 k2 k3 AnsVarR ->
+                       TensList6 k1 k2 k3 AnsVarR
+redefineVarsSystem6 system = mapTensList6' (mapTo6 (\(AnsVar m) -> AnsVar $ I.mapKeys (\i -> varMap I.! i) m)) system
+    where
+        comps = concat $ mapTensList6 (map snd . toListT6) system
+        vars  = nub $ concat $ map (\(AnsVar m) -> I.keys m) comps
+        varMap = I.fromList $ zip vars [1..]
 
 compRows :: (Integral a, Eq a) => [a] -> [a] -> Bool
 compRows xs ys
