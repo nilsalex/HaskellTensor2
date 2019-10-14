@@ -54,11 +54,13 @@ main = do
 
   putStrLn $ "dimension of ansatz space   : " ++ show (tensorRank6 ansaetze)
 
+  let two = SField (2 :: Rational)
+
   let e1 = eqn1 ans0' ans4'
   let e2 = eqn3 ans6'
-  let e3 = eqn1A ans4' ans8'
+  let e3 = eqn1A ans4' (two &. ans8')
   let e4 = eqn1AI ans6' ans10_2'
-  let e5 = eqn2Aa ans6' ans10_1'
+  let e5 = eqn2Aa ans6' (two &. ans10_1')
   let e6 = eqn3A ans6' ans10_2'
 
   let system = e1 &.&>
@@ -90,9 +92,9 @@ main = do
 
           let e1' = removeZeros6 $ eqn1 ans0'' ans4''
           let e2' = removeZeros6 $ eqn3 ans6''
-          let e3' = removeZeros6 $ eqn1A ans4'' ans8''
+          let e3' = removeZeros6 $ eqn1A ans4'' (two &. ans8'')
           let e4' = removeZeros6 $ eqn1AI ans6'' ans10_2''
-          let e5' = removeZeros6 $ eqn2Aa ans6'' ans10_1''
+          let e5' = removeZeros6 $ eqn2Aa ans6'' (two &. ans10_1'')
           let e6' = removeZeros6 $ eqn3A ans6'' ans10_2''
 
           putStrLn $ "dimension of solution space : " ++ show (tensorRank6 solution)
@@ -112,5 +114,21 @@ main = do
           putStrLn ""
           putStrLn $ "number of parameters in kinetic part of EOM : " ++ show (tensorRank6' kin)
           putStrLn $ "number of parameters in mass part of EOM    : " ++ show (tensorRank6' ans8'')
+ 
+          let n1 = removeZeros6 $ (delta3A &* ans4'') &+ (contrATens1 (1,0) $ interArea &* ans4'') &+ (contrATens1 (0,0) $ contrATens1 (1,1) $ two &. flatArea &* interArea &* ans8'')
+
+          let n2_1 = contrATens1 (0,0) $ contrATens1 (1,1) $ contrATens2 (0,0) $ flatArea &* interArea &* interJ2 &* ans10_2''
+          let n2_2 = contrATens1 (0,0) $ contrATens1 (2,1) $ contrATens2 (0,0) $ flatArea &* interArea &* interJ2 &* ans10_2''
+          let n2_3 = contrATens1 (0,0) $ contrATens1 (1,1) $ flatArea &* interArea &* ans10_1''
+
+          let n2 = removeZeros6 $ cyclicSymATens5 [0,1,2] $ n2_1 &+ n2_2 &- (two &. n2_3)
+
+          putStrLn ""
+          putStrLn "Noether identity 1 :"
+          print n1
+
+          putStrLn ""
+          putStrLn "Noether identity 2 :"
+          print n2
 
   return ()
