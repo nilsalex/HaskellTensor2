@@ -141,6 +141,13 @@ etaAbs = fromListT6 l
                 l = map (\(x,y) -> ((Empty, Empty, Empty, singletonInd $ Ind9 x, Empty, Empty),SField y))
                     [(0,-1),(4,1),(7,1),(9,1)]
 
+-- | Inverse Minkowski metric with abstract symmetric index pair.
+invEtaAbs :: ATens 0 0 1 0 0 0 (SField Rational)
+invEtaAbs = fromListT6 l
+                where
+                    l = map (\(x,y) -> ((Empty, Empty, singletonInd $ Ind9 x, Empty, Empty, Empty), SField y))
+                        [(0,-1),(4,1),(7,1),(9,1)]
+
 -- | Covariant spacetime Levi-Civita symbol \(\epsilon_{abcd}\) as type @'ATTens' 0 4 ('SField' 'Rational')@.
 epsilon :: STTens 0 4 (SField Rational)
 epsilon = fromListT2 ls
@@ -199,9 +206,9 @@ lorentzK3 = fromListT6 l
 
 -- Area Metric
 
--- | Flat area metric tensor. Can be obtained via the @'interJArea'@ intertwiner \( J_A^{abcd}\) as: \( N_A = J_A^{abcd} \left ( \eta_{ac} \eta_{bd} - \eta_{ad} \eta_{bc} - \epsilon_{abcd} \right ) \).
-flatArea :: ATens 0 1 0 0 0 0 (SField Rational)
-flatArea = fromListT6 $ map (\(i,v) -> ( (Empty, singletonInd $ Ind20 i, Empty, Empty, Empty, Empty), SField v))
+-- | Flat area metric tensor. Can be obtained via the @'interJArea'@ intertwiner \( J^A_{abcd}\) as: \( N^A = J^A_{abcd} \left ( \eta^{ac} \eta^{bd} - \eta^{ad} \eta^{bc} - \epsilon^{abcd} \right ) \).
+flatArea :: ATens 1 0 0 0 0 0 (SField Rational)
+flatArea = fromListT6 $ map (\(i,v) -> ( (singletonInd $ Ind20 i, Empty, Empty, Empty, Empty, Empty), SField v))
                         [(0,-1),(5,-1),(6,-1),(9,1),(11,-1),(12,-1),(15,1),(18,1),(20,1)]
 
 
@@ -267,35 +274,35 @@ interJ2 = fromListT6 $ fmap (fmap SField) $ filter (\(_,k) -> k /= 0) $ map (\x 
                 | ind1 == (M.!) trian2 (sortInd ind2) = jMult2 ind2
                 | otherwise = 0
 
--- | The tensor \( I^A_{abcd}\) maps between covariant @'Ind20'@ indices and blocks of @4@ of covariant @'Ind3'@ indices.
-interIArea :: ATens 1 0 0 0 0 4  (SField Rational)
+-- | The tensor \( I_A^{abcd}\) maps between contravariant @'Ind20'@ indices and blocks of @4@ of contravariant @'Ind3'@ indices.
+interIArea :: ATens 0 1 0 0 4 0  (SField Rational)
 interIArea = fromListT6 $ fmap (fmap SField) $ filter (\(_,k) -> k /= 0) $ map (\x -> (x,f x)) inds
         where
             trianArea = trianMapArea
-            inds = [ (singletonInd (Ind20 a), Empty, Empty, Empty, Empty, Append (Ind3 b) $ Append (Ind3 c) $ Append (Ind3 d) $ singletonInd $ Ind3 e) | a <- [0..20], b <- [0..3], c <- [0..3], d <- [0..3], e <- [0..3], not (b == c || d == e)]
-            f (ind1, _, _, _, _, ind2)
+            inds = [ (Empty, singletonInd (Ind20 a), Empty, Empty, Append (Ind3 b) $ Append (Ind3 c) $ Append (Ind3 d) $ singletonInd $ Ind3 e, Empty) | a <- [0..20], b <- [0..3], c <- [0..3], d <- [0..3], e <- [0..3], not (b == c || d == e)]
+            f (_, ind1, _, _, ind2, _)
                 | ind1 == (M.!) trianArea indArea = s
                 | otherwise = 0
                     where
                         (indArea, s) = canonicalizeArea ind2
 
--- | The tensor \( J_A^{abcd}\) maps between contravariant @'Ind20'@ indices and blocks of @4@ of contravariant @'Ind3'@ indices.
-interJArea :: ATens 0 1 0 0 4 0 (SField Rational)
+-- | The tensor \( J^A_{abcd}\) maps between covariant @'Ind20'@ indices and blocks of @4@ of covariant @'Ind3'@ indices.
+interJArea :: ATens 1 0 0 0 0 4 (SField Rational)
 interJArea = fromListT6 $ fmap (fmap SField) $ filter (\(_,k) -> k /= 0) $ map (\x -> (x,f x)) inds
         where
             trianArea = trianMapArea
-            inds = [  (Empty, singletonInd $ Ind20 a, Empty, Empty, Append (Ind3 b) $ Append (Ind3 c) $ Append (Ind3 d) $ singletonInd $ Ind3 e, Empty) | a <- [0..20], b <- [0..3], c <- [0..3], d <- [0..3], e <- [0..3], not (b == c || d == e)]
-            f (_, ind1, _, _, ind2, _)
+            inds = [  (singletonInd $ Ind20 a, Empty, Empty, Empty, Empty, Append (Ind3 b) $ Append (Ind3 c) $ Append (Ind3 d) $ singletonInd $ Ind3 e) | a <- [0..20], b <- [0..3], c <- [0..3], d <- [0..3], e <- [0..3], not (b == c || d == e)]
+            f (ind1, _, _, _, _, ind2)
                 | ind1 == (M.!) trianArea indArea = s * jMultArea indArea
                 | otherwise = 0
                     where
                         (indArea, s) = canonicalizeArea ind2
 
--- |  Can be obtained as: \(C^{Am}_{Bn} = -4 \cdot I^A_{nbcd} J_B^{mbcd}  \)
+-- |  Can be obtained as: \(C_{Am}^{Bn} = 4 \cdot I_A^{nbcd} J^B_{mbcd}  \)
 --
--- > interArea = SField (-4 :: Rational) &. contrATens3 (1,1) (contrATens3 (2,2) $ contrATens3 (3,3) $ interIArea &* interJArea
+-- > interArea = SField (4 :: Rational) &. contrATens3 (1,1) (contrATens3 (2,2) $ contrATens3 (3,3) $ interIArea &* interJArea
 interArea :: ATens 1 1 0 0 1 1 (SField Rational)
-interArea = SField (-4 :: Rational) &. contrATens3 (1,1) (contrATens3 (2,2) $ contrATens3 (3,3) $ interIArea &* interJArea)
+interArea = SField (4 :: Rational) &. contrATens3 (1,1) (contrATens3 (2,2) $ contrATens3 (3,3) $ interIArea &* interJArea)
 
 -- | Can be obtained as : \(K^{Im}_{Jn} = -2 \cdot I^I_{nb} J_J^{mb}  \)
 --
@@ -303,11 +310,11 @@ interArea = SField (-4 :: Rational) &. contrATens3 (1,1) (contrATens3 (2,2) $ co
 interMetric :: ATens 0 0 1 1 1 1 (SField Rational)
 interMetric = SField (-2 :: Rational) &. contrATens3 (0,0) (interI2 &* interJ2)
 
--- | Is given by: \( C^m_{Bn} = C^{Am}_{Bn} N_A \)
+-- | Is given by: \( C_m^{Bn} = C_{Am}^{Bn} N^A \)
 --
--- > flatInter = contrATens1 (0,1) $ interArea &* flatArea
-flatInter :: ATens 0 1 0 0 1 1 (SField Rational)
-flatInter = contrATens1 (0,1) $ interArea &* flatArea
+-- > flatInter = contrATens1 (1,0) $ interArea &* flatArea
+flatInter :: ATens 1 0 0 0 1 1 (SField Rational)
+flatInter = contrATens1 (1,0) $ interArea &* flatArea
 
 -- | Is given by: \( K^m_{Jn} = K^{Im}_{Jn} \eta_I\)
 --
@@ -315,7 +322,7 @@ flatInter = contrATens1 (0,1) $ interArea &* flatArea
 flatInterMetric :: ATens 0 0 0 1 1 1 (SField Rational)
 flatInterMetric = contrATens2 (0,1) $ interMetric &* etaAbs
 
--- | Is given by: \(  C_{An}^{Bm} \delta_p^q - \delta_A^B \delta_p^m \delta_n^q \)
+-- | Is given by: \(  C^{An}_{Bm} \delta_p^q - \delta^A_B \delta_p^n \delta_m^q \)
 interEqn2 :: ATens 1 1 0 0 2 2 (SField Rational)
 interEqn2 = int1 &- int2
         where
@@ -329,7 +336,7 @@ interEqn2Metric = int1 &- int2
             int1 = interMetric &* delta3A
             int2 = tensorTrans6 (0,1) (delta3A &* delta3A) &* delta9
 
--- | Is given by: \(  C_{An}^{Bm} \delta_I^J + \delta_A^B K^{Im}_{Jn}\)
+-- | Is given by: \(  C^{An}_{Bm} \delta_I^J + \delta^A_B K^{In}_{Jm}\)
 interEqn3 :: ATens 1 1 1 1 1 1 (SField Rational)
 interEqn3 = int1 &+ int2
         where
@@ -343,7 +350,7 @@ interEqn3Metric = int1 &+ int2
             int1 = interMetric &* delta9
             int2 = delta9 &* interMetric
 
--- | Is given by: \( C_{An}^{B(m\vert} 2 J_I^{\vert p) q} - \delta^B_A J_I ^{pm} \delta_n^q  \)
+-- | Is given by: \( C^{A(n}_{Bm} 2 J_I^{p)q} - \delta_B^A J_I^{pn} \delta_m^q  \)
 interEqn4 :: ATens 1 1 0 1 3 1 (SField Rational)
 interEqn4 = block1 &- block2
         where
@@ -359,7 +366,7 @@ interEqn4Metric = block1 &- block2
             block1 = block1' &+ tensorTrans5 (1,2) block1'
             block2 = delta3A &* interJ2 &* delta9
 
--- | Is given by: \( C_{An}^{B(m\vert} J_I^{\vert p q )} \)
+-- | Is given by: \( C^{A(n}_{Bm} J_I^{pq)} \)
 interEqn5 :: ATens 1 1 0 1 3 1 (SField Rational)
 interEqn5 = cyclicSymATens5 [0,1,2] intA1
         where

@@ -52,78 +52,78 @@ import qualified Data.IntMap.Strict as I
 
 --the ansatz integrability conditions (when perturbing around eta*eta-eta*eta-epsilon)
 
-ansatzA :: ATens 1 0 0 0 0 0 AnsVarR -> ATens 1 0 0 0 2 0 AnsVarR
+ansatzA :: ATens 0 1 0 0 0 0 AnsVarR -> ATens 0 1 0 0 2 0 AnsVarR
 ansatzA ans4 = aSymATens5 (0,1) $ contrATens1 (0,0) $ contrATens3 (1,0) $ ans4 &* interArea &* invEtaA
 
-ansatzAa :: ATens 1 0 0 0 1 0 AnsVarR -> ATens 1 0 0 0 3 0 AnsVarR
+ansatzAa :: ATens 0 1 0 0 1 0 AnsVarR -> ATens 0 1 0 0 3 0 AnsVarR
 ansatzAa ans5 = aSymATens5 (0,2) $ contrATens1 (0,0) $ contrATens3 (0,0) $ contrATens3 (3,0) $ ans5 &* interEqn2 &* invEtaA
 
-ansatzAI :: ATens 1 0 1 0 0 0 AnsVarR -> ATens 1 0 1 0 2 0 AnsVarR
+ansatzAI :: ATens 0 1 1 0 0 0 AnsVarR -> ATens 0 1 1 0 2 0 AnsVarR
 ansatzAI ans6 = aSymATens5 (0,1) $ contrATens1 (0,0) $ contrATens2 (0,0) $ contrATens3 (1,0) $ ans6 &* interEqn3 &* invEtaA
 
-ansatzAB :: ATens 2 0 0 0 0 0 AnsVarR -> ATens 2 0 0 0 2 0 AnsVarR
+ansatzAB :: ATens 0 2 0 0 0 0 AnsVarR -> ATens 0 2 0 0 2 0 AnsVarR
 ansatzAB ans8 = symATens1 (0,1) $ aSymATens5 (0,1) $ contrATens1 (0,0) $ contrATens3 (1,0) $ ans8 &* interArea &* invEtaA
 
-ansatzAaBb :: ATens 2 0 0 0 2 0 AnsVarR -> ATens 2 0 0 0 4 0 AnsVarR
+ansatzAaBb :: ATens 0 2 0 0 2 0 AnsVarR -> ATens 0 2 0 0 4 0 AnsVarR
 ansatzAaBb ans10_1 = block1 &+ block2
     where
         block1 = aSymATens5 (1,3) $ contrATens1 (0,0) $ contrATens3 (0,0) $ contrATens3 (4,0) $ ans10_1 &* interEqn2 &* invEtaA
         block2 = tensorTrans1 (0,1) $ tensorTrans5 (0,2) block1
 
-ansatzABI :: ATens 2 0 1 0 0 0 AnsVarR -> ATens 2 0 1 0 2 0 AnsVarR
+ansatzABI :: ATens 0 2 1 0 0 0 AnsVarR -> ATens 0 2 1 0 2 0 AnsVarR
 ansatzABI ans10_2 = block1 &+ block2
     where
         block1 = aSymATens5 (0,1) $ contrATens1 (1,0) $ contrATens2 (0,0) $ contrATens3 (1,0) $ ans10_2 &* interEqn3 &* invEtaA
         block2 = tensorTrans1 (0,1) $ aSymATens5 (0,1) $ contrATens1 (0,0) $ contrATens3 (1,0) $ ans10_2 &* interArea &* invEtaA
 
-ansatzAIBJ :: ATens 2 0 2 0 0 0 AnsVarR -> ATens 2 0 2 0 2 0 AnsVarR
+ansatzAIBJ :: ATens 0 2 2 0 0 0 AnsVarR -> ATens 0 2 2 0 2 0 AnsVarR
 ansatzAIBJ ans12_1 = block1 &+ block2
     where
         block1 = aSymATens5 (0,1) $ contrATens1 (0,0) $ contrATens2 (0,0) $ contrATens3 (1,0) $ ans12_1 &* interEqn3 &* invEtaA
         block2 = tensorTrans1 (0,1) $ tensorTrans3 (0,1) block1
 
-ansatzABC :: ATens 3 0 0 0 0 0 AnsVarR -> ATens 3 0 0 0 2 0 AnsVarR
+ansatzABC :: ATens 0 3 0 0 0 0 AnsVarR -> ATens 0 3 0 0 2 0 AnsVarR
 ansatzABC ans12 = block1 &+ block2 &+ block3
     where
         block1 = aSymATens5 (0,1) $ contrATens1 (0,0) $ contrATens3 (1,0) $ ans12 &* interArea &* invEtaA
         block2 = tensorTrans1 (1,2) block1
         block3 = tensorTrans1 (0,2) block1
 
-ansatzABbCc :: ATens 3 0 0 0 2 0 AnsVarR -> ATens 3 0 0 0 4 0 AnsVarR
+ansatzABbCc :: ATens 0 3 0 0 2 0 AnsVarR -> ATens 0 3 0 0 4 0 AnsVarR
 ansatzABbCc ans14_1 = block1 &+ block2 &+ block3
     where
         block1 = aSymATens5 (1,3) $ contrATens1 (1,0) $ contrATens3 (0,0) $ contrATens3 (4,0) $ ans14_1 &* interEqn2 &* invEtaA
         block2 = tensorTrans1 (1,2) $ tensorTrans5 (0,2) block1
         block3 = tensorTrans5 (1,2) $ tensorTrans1 (0,1) $ tensorTrans1 (1,2) $ aSymATens5 (2,3) $ contrATens1 (0,0) $ contrATens3 (3,0) $ ans14_1 &* interArea &* invEtaA
 
-ansatzABCI :: ATens 3 0 1 0 0 0 AnsVarR -> ATens 3 0 1 0 2 0 AnsVarR
+ansatzABCI :: ATens 0 3 1 0 0 0 AnsVarR -> ATens 0 3 1 0 2 0 AnsVarR
 ansatzABCI ans14_2 = block1 &+ block2
     where
         block1 = symATens1 (0,2) $ contrATens1 (0,0) $ ans14_2 &* aSymATens5 (0,1) (contrATens3 (1,0) $ interArea &* invEtaA)
         block2 = tensorTrans1 (1,2) $ contrATens2 (0,0) $ contrATens1 (2,0) $ ans14_2 &* aSymATens5 (0,1) (contrATens3 (1,0) $ interEqn3 &* invEtaA)
 
-ansatzAaBbCI :: ATens 3 0 1 0 2 0 AnsVarR -> ATens 3 0 1 0 4 0 AnsVarR
+ansatzAaBbCI :: ATens 0 3 1 0 2 0 AnsVarR -> ATens 0 3 1 0 4 0 AnsVarR
 ansatzAaBbCI ans16_1 = block1 &+ block2 &+ block3
     where
         block1 = aSymATens5 (1,3) $ contrATens1 (0,0) $ contrATens3 (0,0) $ contrATens3 (4,0) $ ans16_1 &* interEqn2 &* invEtaA
         block2 = tensorTrans1 (0,2) $ tensorTrans5 (0,2) block1
         block3 = tensorTrans5 (1,2) $ tensorTrans1 (1,2) $ aSymATens5 (2,3) $ contrATens2 (0,0) $ contrATens1 (2,0) $ contrATens3 (4,0) $ ans16_1 &* interEqn3 &* invEtaA
 
-ansatzABICJ :: ATens 3 0 2 0 0 0 AnsVarR -> ATens 3 0 2 0 2 0 AnsVarR
+ansatzABICJ :: ATens 0 3 2 0 0 0 AnsVarR -> ATens 0 3 2 0 2 0 AnsVarR
 ansatzABICJ ans16_2 = block1 &+ block2 &+ block3
     where
         block1 = aSymATens5 (0,1) $ contrATens1 (1,0) $ contrATens2 (0,0) $ contrATens3 (1,0) $ ans16_2 &* interEqn3 &* invEtaA
         block2 = tensorTrans1 (1,2) $ tensorTrans3 (0,1) block1
         block3 = tensorTrans3 (0,1) $ tensorTrans1 (0,2) $ aSymATens5 (0,1) $ contrATens1 (0,0) $ contrATens3 (1,0) $ ans16_2 &* interArea &* invEtaA
 
-ansatzAIBJCK :: ATens 3 0 3 0 0 0 AnsVarR -> ATens 3 0 3 0 2 0 AnsVarR
+ansatzAIBJCK :: ATens 0 3 3 0 0 0 AnsVarR -> ATens 0 3 3 0 2 0 AnsVarR
 ansatzAIBJCK ans18 = block1 &+ block2 &+ block3
     where
         block1 = contrATens1 (0,0) $ contrATens2 (0,0) $ ans18 &* removeZeros6 (aSymATens5 (0,1) $ contrATens3 (1,0) $ interEqn3 &* invEtaA)
         block2 = tensorTrans1 (0,2) $ tensorTrans3 (0,2) block1
         block3 = tensorTrans1 (1,2) $ tensorTrans3 (1,2) block1
 
-ansatzABCD :: ATens 4 0 0 0 0 0 AnsVarR -> ATens 4 0 0 0 2 0 AnsVarR
+ansatzABCD :: ATens 0 4 0 0 0 0 AnsVarR -> ATens 0 4 0 0 2 0 AnsVarR
 ansatzABCD ans16 = block1 &+ block2 &+ block3 &+ block4
     where
         block1 = aSymATens5 (0,1) $ contrATens1 (0,0) $ contrATens3 (1,0) $ ans16 &* interArea &* invEtaA
@@ -131,7 +131,7 @@ ansatzABCD ans16 = block1 &+ block2 &+ block3 &+ block4
         block3 = tensorTrans1 (1,3) block1
         block4 = tensorTrans1 (2,3) block1
 
-ansatzABCDJ :: ATens 4 0 1 0 0 0 AnsVarR -> ATens 4 0 1 0 2 0 AnsVarR
+ansatzABCDJ :: ATens 0 4 1 0 0 0 AnsVarR -> ATens 0 4 1 0 2 0 AnsVarR
 ansatzABCDJ ans18_2 = block1 &+ block2 &+ block3 &+ block4
     where
         block1 = aSymATens5 (0,1) $ contrATens1 (0,0) $ contrATens3 (1,0) $ ans18_2 &* interArea &* invEtaA
@@ -139,7 +139,7 @@ ansatzABCDJ ans18_2 = block1 &+ block2 &+ block3 &+ block4
         block3 = tensorTrans1 (1,3) block1
         block4 = tensorTrans1 (2,3) $ aSymATens5 (0,1) $ contrATens2 (0,0) $ contrATens1 (3,0) $ contrATens3 (1,0) $ ans18_2 &* interEqn3 &* invEtaA
 
-ansatzABCcDd :: ATens 4 0 0 0 2 0 AnsVarR -> ATens 4 0 0 0 4 0 AnsVarR
+ansatzABCcDd :: ATens 0 4 0 0 2 0 AnsVarR -> ATens 0 4 0 0 4 0 AnsVarR
 ansatzABCcDd ans18_3 = block1 &+ block2 &+ block3 &+ block4
     where
         block1 = contrATens1 (0,0) $ ans18_3 &* aSymATens5 (0,1) (contrATens3 (1,0) $ interArea &* invEtaA)
@@ -153,14 +153,14 @@ ansatzABCcDd ans18_3 = block1 &+ block2 &+ block3 &+ block4
 
 --order 0
 
--- | The equation is given by: \(0 = a^A C_{An}^{Bm}N_B + a_0 \delta^m_n \).
-eqn1 :: ATens 0 0 0 0 0 0 AnsVarR -> ATens 1 0 0 0 0 0 AnsVarR -> ATens 0 0 0 0 1 1 AnsVarR
+-- | The equation is given by: \(0 = a_A C^{An}_{Bm}N_B + a_0 \delta^n_m \).
+eqn1 :: ATens 0 0 0 0 0 0 AnsVarR -> ATens 0 1 0 0 0 0 AnsVarR -> ATens 0 0 0 0 1 1 AnsVarR
 eqn1 ans0 ans4 = contrATens1 (0,0) (ans4 &* flatInter) &+ (ans0 &* delta3A)
 
 --order 1
 
--- | The equation is given by: \( 0 = a^A C_{An}^{Bm} + 2 a^{AB}C_{An}^{Cm}N_C + a^B\delta^m_n \).
-eqn1A :: ATens 1 0 0 0 0 0 AnsVarR -> ATens 2 0 0 0 0 0 AnsVarR -> ATens 1 0 0 0 1 1 AnsVarR
+-- | The equation is given by: \( 0 = a_A C^{An}_{Bm} + 2 a_{AB}C^{An}_{Cm}N^C + a_B\delta^n_m \).
+eqn1A :: ATens 0 1 0 0 0 0 AnsVarR -> ATens 0 2 0 0 0 0 AnsVarR -> ATens 0 1 0 0 1 1 AnsVarR
 eqn1A ans4 ans8 = block1 &+ block2 &+ block3
         where
             block1 = contrATens1 (0,0) $ ans4 &* interArea
@@ -169,36 +169,36 @@ eqn1A ans4 ans8 = block1 &+ block2 &+ block3
 
 --order 2
 
--- | The equation is given by: \( 0 = 2 a^{AC}C_{An}^{Bm} + 2a^{AB}C_{An}^{Cm} + 6 a^{ABC}C_{An}^{Dm} N_D + 2a^{BC} \delta^m_n \)
-eqn1AB :: ATens 2 0 0 0 0 0 AnsVarR -> ATens 3 0 0 0 0 0 AnsVarR -> ATens 2 0 0 0 1 1 AnsVarR
+-- | The equation is given by: \( 0 = 2 a_{AC}C^{An}_{Bm} + 2a_{AB}C^{An}_{Cm} + 6 a_{ABC}C^{An}_{Dm} N^D + 2a_{BC} \delta^n_m \)
+eqn1AB :: ATens 0 2 0 0 0 0 AnsVarR -> ATens 0 3 0 0 0 0 AnsVarR -> ATens 0 2 0 0 1 1 AnsVarR
 eqn1AB ans8 ans12 = block1 &+ block2 &+ block3
         where
-            block1 = symATens1 (0,1) $ contrATens1 (0,0) $ ans8 &* interArea
+            block1 = symATens2 (0,1) $ contrATens1 (0,0) $ ans8 &* interArea
             block2 = contrATens1 (0,0) $ ans12 &* flatInter
             block3 = ans8 &* delta3A
 
 --order 3
 
-eqn1ABC :: ATens 3 0 0 0 0 0 AnsVarR -> ATens 4 0 0 0 0 0 AnsVarR -> ATens 3 0 0 0 1 1 AnsVarR
+eqn1ABC :: ATens 0 3 0 0 0 0 AnsVarR -> ATens 0 4 0 0 0 0 AnsVarR -> ATens 0 3 0 0 1 1 AnsVarR
 eqn1ABC ans12 ans16 = block1 &+ block2 &+ block3 &+ block4
         where
             block1 = contrATens1 (0,0) $ ans12 &* interArea
-            block2 = tensorTrans1 (0,2) block1
-            block3 = tensorTrans1 (1,2) block1
+            block2 = tensorTrans2 (0,2) block1
+            block3 = tensorTrans2 (1,2) block1
             block4 = contrATens1 (0,0) $ ans16 &* flatInter
 
 --the sub-graph with 2 total derivative
 
 --order 0
 
--- | The equation is given by: \( 0 = a^{AI}C_{An}^{B(m\vert }N_B J^{\vert pq)}_I \).
-eqn3 :: ATens 1 0 1 0 0 0 AnsVarR -> ATens 0 0 0 0 3 1 AnsVarR
-eqn3 ans6 = contrATens2 (0,0) $ contrATens1 (0,0) $ ans6 &* contrATens1 (0,1) (interEqn5 &* flatArea)
+-- | The equation is given by: \( 0 = a_A^I C^{A(n\vert}_{Bm} N^B J^{\vert pq)}_I \).
+eqn3 :: ATens 0 1 1 0 0 0 AnsVarR -> ATens 0 0 0 0 3 1 AnsVarR
+eqn3 ans6 = contrATens2 (0,0) $ contrATens1 (0,0) $ ans6 &* contrATens1 (1,0) (interEqn5 &* flatArea)
 
 --order 1
 
--- | The equation is given by: \( 0 = a^{AI}\left [C_{An}^{Bm}\delta^J _I- 2 \delta^B_A J_I^{pm}I^J_{pn} \right ] + a^{ABJ}C_{An}^{Cm}N_C + a^{BJ} \delta^m_n \).
-eqn1AI :: ATens 1 0 1 0 0 0 AnsVarR -> ATens 2 0 1 0 0 0 AnsVarR -> ATens 1 0 1 0 1 1 AnsVarR
+-- | The equation is given by: \( 0 = a_A^I \left [C^{An}_{Bm}\delta^J _I- 2 \delta_B^A J_I^{pn}I^J_{pm} \right ] + a_{AB}^J C^{An}_{Cm}N^C + a_B^J \delta^n_m \).
+eqn1AI :: ATens 0 1 1 0 0 0 AnsVarR -> ATens 0 2 1 0 0 0 AnsVarR -> ATens 0 1 1 0 1 1 AnsVarR
 eqn1AI ans6 ans10_2 = block1 &+ block2 &+ block3
         where
             block1 = contrATens1 (0,0) $ ans10_2 &* flatInter
@@ -206,94 +206,95 @@ eqn1AI ans6 ans10_2 = block1 &+ block2 &+ block3
             block3 = ans6 &* delta3A
 
 -- | The equation is given by: \( 0 = 2a^{A(p\vert Bq}C_{An}^{C\vert m)}N_C + a^{AI} \left [C_{An}^{B(m\vert} 2 J_{I}^{\vert p)q} - \delta_A^BJ_I^{pm}\delta^q_n \right ] \).
-eqn2Aa :: ATens 1 0 1 0 0 0 AnsVarR -> ATens 2 0 0 0 2 0 AnsVarR -> ATens 1 0 0 0 3 1 AnsVarR
+eqn2Aa :: ATens 0 1 1 0 0 0 AnsVarR -> ATens 0 2 0 0 2 0 AnsVarR -> ATens 0 1 0 0 3 1 AnsVarR
 eqn2Aa ans6 ans10_1 = block1 &+ block2
             where
-                block1 = symATens5 (1,2) $ contrATens1 (1,0) $ ans10_1 &* flatInter
+                block1 = symATens5 (1,2) $ contrATens1 (0,1) $ ans10_1 &* flatInter
                 block2 = symATens5 (1,2) $ contrATens2 (0,0) $ contrATens1 (0,0) $ ans6 &* interEqn4
 
 -- | The equation is given by: \( 0 = a^{BAI}C_{An}^{C(m\vert}N_CJ_I^{\vert pq)} + a^{AI}C_{An}^{B(m \vert} J_I^{\vert pq)} \).
-eqn3A :: ATens 1 0 1 0 0 0 AnsVarR -> ATens  2 0 1 0 0 0 AnsVarR -> ATens 1 0 0 0 3 1 AnsVarR
+eqn3A :: ATens 0 1 1 0 0 0 AnsVarR -> ATens 0 2 1 0 0 0 AnsVarR -> ATens 0 1 0 0 3 1 AnsVarR
 eqn3A ans6 ans10_2 = block1 &+ block2
         where
             block1 = contrATens1 (0,0) $ contrATens2 (0,0) $ ans6 &* interEqn5
-            block2 = contrATens2 (0,0) $ contrATens1 (1,0) $ contrATens1 (2,1) $ ans10_2 &* interEqn5 &* flatArea
+            block2 = contrATens2 (0,0) $ contrATens1 (0,1) $ contrATens1 (1,2) $ ans10_2 &* interEqn5 &* flatArea
 
 --order 2
 
 -- | The equation is given by: \( 0 = a^{CAI} \left [C_{An}^{Bm}\delta^J _I- 2 \delta^B_A J_I^{pm}I^J_{pn} \right ] + 2 a^{ACBJ} C_{An}^{Dm} N_D + a^{CBJ} \delta ^m _n \).
-eqn1ABI :: ATens 2 0 1 0 0 0 AnsVarR -> ATens 3 0 1 0 0 0 AnsVarR -> ATens 2 0 1 0 1 1 AnsVarR
+eqn1ABI :: ATens 0 2 1 0 0 0 AnsVarR -> ATens 0 3 1 0 0 0 AnsVarR -> ATens 0 2 1 0 1 1 AnsVarR
 eqn1ABI ans10_2 ans14_2 = block1 &+ block2 &+ block3 &+ block4
         where
             block1 = contrATens1 (0,0) $ ans14_2 &* flatInter
-            block2 = contrATens1 (1,0) $ interArea &* ans10_2
-            block3 = contrATens2 (0,0) $ contrATens1 (1,0) $ ans10_2 &* interEqn3
+            block2 = contrATens1 (0,1) $ interArea &* ans10_2
+            block3 = contrATens2 (0,0) $ contrATens1 (0,1) $ ans10_2 &* interEqn3
             block4 = ans10_2 &* delta3A
 
 -- | The equation is given by: \( 0 = 2 a^{BCAI}C_{An}^{D(m \vert}N_DJ_I^{\vert pq)} + a^{CAI}C_{An}^{B(m \vert} J_I^{\vert pq)} \).
-eqn3AB :: ATens 2 0 1 0 0 0 AnsVarR -> ATens 3 0 1 0 0 0 AnsVarR -> ATens 2 0 0 0 3 1 AnsVarR
+eqn3AB :: ATens 0 2 1 0 0 0 AnsVarR -> ATens 0 3 1 0 0 0 AnsVarR -> ATens 0 2 0 0 3 1 AnsVarR
 eqn3AB ans10_2 ans14_2 = block1 &+ block2
         where
-            block1 = symATens1 (0,1) $ contrATens2 (0,0) $ contrATens1 (1,0) $ ans10_2 &* interEqn5
-            block2 = contrATens2 (0,0) $ contrATens1 (2,0) $ ans14_2 &* contrATens1 (0,1) (interEqn5 &* flatArea)
+            block1 = symATens2 (0,1) $ contrATens2 (0,0) $ contrATens1 (0,1) $ ans10_2 &* interEqn5
+            block2 = contrATens2 (0,0) $ contrATens1 (0,2) $ ans14_2 &* contrATens1 (1,0) (interEqn5 &* flatArea)
 
 -- | The equation is given by: \( 0 = 2 a^{C A(p \vert B q} C_{An}^{D \vert m )} N_D + a^{CAI} \left [C_{An}^{B(m\vert} 2 J_{I}^{\vert p)q} - \delta_A^BJ_I^{pm}\delta^q_n \right ] \).
-eqn2ABb :: ATens 2 0 0 0 2 0 AnsVarR -> ATens 2 0 1 0 0 0 AnsVarR -> ATens 3 0 0 0 2 0 AnsVarR -> ATens 2 0 0 0 3 1 AnsVarR
+eqn2ABb :: ATens 0 2 0 0 2 0 AnsVarR -> ATens 0 2 1 0 0 0 AnsVarR -> ATens 0 3 0 0 2 0 AnsVarR -> ATens 0 2 0 0 3 1 AnsVarR
 eqn2ABb ans10_1 ans10_2 ans14_1 = block1 &+ block2 &+ block3
         where
-            block1 = symATens5 (0,2) $ contrATens1 (1,0) $ ans14_1 &* flatInter
-            block2' = tensorTrans5 (0,1) $ contrATens2 (0,0) $ contrATens1 (1,0) $ ans10_2 &* interEqn4
+            block1 = symATens5 (0,2) $ contrATens1 (0,1) $ ans14_1 &* flatInter
+            block2' = tensorTrans5 (0,1) $ contrATens2 (0,0) $ contrATens1 (0,1) $ ans10_2 &* interEqn4
             block2 = symATens5 (0,2) block2'
-            block3 = tensorTrans1 (0,1) $ symATens5 (0,2) $ contrATens1 (0,0) $ ans10_1 &* interArea
+            block3 = tensorTrans2 (0,1) $ symATens5 (0,2) $ contrATens1 (0,0) $ ans10_1 &* interArea
 
 -- | The equation is given by: \( 0 = 2 a^{ApCr} \left [ C_{An}^{Bm} \delta ^q_p - \delta^B_A \delta^m_p \delta^q_n \right ] +2 a^{A Bq Cr} C_{An}^{Dm} N_D + 2 a^{BqCr} \delta^m_n \).
-eqn1AaBb :: ATens 2 0 0 0 2 0 AnsVarR -> ATens 3 0 0 0 2 0 AnsVarR -> ATens 2 0 0 0 3 1 AnsVarR
+eqn1AaBb :: ATens 0 2 0 0 2 0 AnsVarR -> ATens 0 3 0 0 2 0 AnsVarR -> ATens 0 2 0 0 3 1 AnsVarR
 eqn1AaBb ans10_1 ans14_1 = block1 &+ block2 &+ block3 &+ block4
         where
             block1 = tensorTrans5 (1,2) $ contrATens1 (0,0) $ ans14_1 &* flatInter
             block2 = contrATens1 (0,0) $ contrATens3 (0,1) $ ans10_1 &* interEqn2
-            block3 = tensorTrans1 (0,1) $ tensorTrans5 (0,2) block2
+            block3 = tensorTrans2 (0,1) $ tensorTrans5 (0,2) block2
             block4 = tensorTrans5 (1,2) $ ans10_1 &* delta3A
 
 --order 2: further equations of the next order
 
 
-eqn1ABbCc :: ATens 3 0 0 0 2 0 AnsVarR -> ATens 4 0 0 0 2 0 AnsVarR -> ATens 3 0 0 0 3 1 AnsVarR
+eqn1ABbCc :: ATens 0 3 0 0 2 0 AnsVarR -> ATens 0 4 0 0 2 0 AnsVarR -> ATens 0 3 0 0 3 1 AnsVarR
 eqn1ABbCc ans14_1 ans18_3 = block1 &+ block2 &+ block3 &+ block4
         where
             block1 = tensorTrans5 (1,2) $ contrATens1 (0,0) $ ans18_3 &* flatInter
-            block2 = tensorTrans5 (0,1) $ contrATens1 (1,0) $ interArea &* ans14_1
-            block3 = contrATens3 (0,1) $ contrATens1 (1,0) $ ans14_1 &* interEqn2
-            block4 = tensorTrans1 (1,2) $ tensorTrans5 (0,2) block3
+            block2 = tensorTrans5 (0,1) $ contrATens1 (0,1) $ interArea &* ans14_1
+            block3 = contrATens3 (0,1) $ contrATens1 (0,1) $ ans14_1 &* interEqn2
+            block4 = tensorTrans2 (1,2) $ tensorTrans5 (0,2) block3
 
-eqn1ABCI :: ATens 3 0 1 0 0 0 AnsVarR -> ATens 4 0 1 0 0 0 AnsVarR -> ATens 3 0 1 0 1 1 AnsVarR
+eqn1ABCI :: ATens 0 3 1 0 0 0 AnsVarR -> ATens 0 4 1 0 0 0 AnsVarR -> ATens 0 3 1 0 1 1 AnsVarR
 eqn1ABCI ans14_2 ans18_2 = block1 &+ block2 &+ block3
         where
             block1 = contrATens1 (0,0) $ ans18_2 &* flatInter
-            block2 = symATens1 (0,1) $ contrATens1 (1,0) $ interArea &* ans14_2
-            block3 = contrATens2 (0,0) $ contrATens1 (2,0) $ ans14_2 &* interEqn3
+            block2 = symATens2 (0,1) $ contrATens1 (0,1) $ interArea &* ans14_2
+            block3 = contrATens2 (0,0) $ contrATens1 (0,2) $ ans14_2 &* interEqn3
 
-eqn2ABCc :: ATens 3 0 0 0 2 0 AnsVarR -> ATens 3 0 1 0 0 0 AnsVarR -> ATens 4 0 0 0 2 0 AnsVarR -> ATens 3 0 0 0 3 1 AnsVarR
+eqn2ABCc :: ATens 0 3 0 0 2 0 AnsVarR -> ATens 0 3 1 0 0 0 AnsVarR -> ATens 0 4 0 0 2 0 AnsVarR -> ATens 0 3 0 0 3 1 AnsVarR
 eqn2ABCc ans14_1 ans14_2 ans18_3 = block1 &+ block2 &+ block3
         where
-            block1 = symATens5 (0,2) $ contrATens1 (2,0) $ ans18_3 &* flatInter
-            block2 = symATens5 (0,2) $ tensorTrans5 (0,1) $ contrATens2 (0,0) $ contrATens1 (2,0) $ ans14_2 &* interEqn4
-            block3 = symATens1 (0,1) $ tensorTrans1 (1,2) $ symATens5 (0,2) $ contrATens1 (1,0) $ ans14_1 &* interArea
+            block1 = symATens5 (0,2) $ contrATens1 (0,2) $ ans18_3 &* flatInter
+            block2 = symATens5 (0,2) $ tensorTrans5 (0,1) $ contrATens2 (0,0) $ contrATens1 (0,2) $ ans14_2 &* interEqn4
+            block3 = symATens2 (0,1) $ tensorTrans2 (1,2) $ symATens5 (0,2) $ contrATens1 (0,1) $ ans14_1 &* interArea
 
-eqn3ABC :: ATens 3 0 1 0 0 0 AnsVarR -> ATens 4 0 1 0 0 0 AnsVarR -> ATens 3 0 0 0 3 1 AnsVarR
+eqn3ABC :: ATens 0 3 1 0 0 0 AnsVarR -> ATens 0 4 1 0 0 0 AnsVarR -> ATens 0 3 0 0 3 1 AnsVarR
 eqn3ABC ans14_2 ans18_2 = block1 &+ block2 &+ block3 &+ block4
         where
-            block1 = contrATens2 (0,0) $ contrATens1 (3,0) $ ans18_2 &* contrATens1 (0,1) (interEqn5 &* flatArea)
-            block2 = contrATens2 (0,0) $ contrATens1 (2,0) $ ans14_2 &* interEqn5
-            block3 = tensorTrans1 (0,2) block2
-            block4 = tensorTrans1 (1,2) block2
+            block1 = contrATens2 (0,0) $ contrATens1 (0,3) $ ans18_2 &* contrATens1 (1,0) (interEqn5 &* flatArea)
+            block2 = contrATens2 (0,0) $ contrATens1 (0,2) $ ans14_2 &* interEqn5
+            block3 = tensorTrans2 (0,2) block2
+            block4 = tensorTrans2 (1,2) block2
 
 --the sub graph with a total of 4 derivatives: further equations that contain more derivatives
 
-eqn3AI :: ATens 2 0 2 0 0 0 AnsVarR -> ATens 1 0 1 0 3 1 AnsVarR
-eqn3AI ans12_1 = contrATens2 (0,0) $ contrATens1 (0,0) $ ans12_1 &* contrATens1 (0,1) (interEqn5 &* flatArea)
+eqn3AI :: ATens 0 2 2 0 0 0 AnsVarR -> ATens 0 1 1 0 3 1 AnsVarR
+eqn3AI ans12_1 = contrATens2 (0,0) $ contrATens1 (0,0) $ ans12_1 &* contrATens1 (1,0) (interEqn5 &* flatArea)
 
 
+{-
 --tensor trafo equations for rom calculations (use density or scalar)
 --ansätze must be computed from lagrangian ansätze
 
@@ -345,6 +346,7 @@ quadKin3 ans14 ans10 = cyclicSymATens5 [0,1,2] $ tens1 &+ tens2
     where
         tens1 = contrATens1 (1,0) $ ans10 &* interArea
         tens2 = contrATens1 (1,0) $ ans14 &* flatInter
+-}
 
 
 --principal polynomial equations
@@ -352,7 +354,7 @@ quadKin3 ans14 ans10 = cyclicSymATens5 [0,1,2] $ tens1 &+ tens2
 polyAns2 :: ATens 0 0 1 0 0 0 AnsVarR
 polyAns2 = fromListT6' $ map (\(x,y) -> (([], [], [Ind9 x], [], [], []),AnsVar $ I.singleton 1 y)) [(0,-1),(4,1),(7,1),(9,1)]
 
-polyTensEqn :: ATens 1 0 1 0 0 0 AnsVarR -> ATens 0 0 1 0 1 1 AnsVarR
+polyTensEqn :: ATens 0 1 1 0 0 0 AnsVarR -> ATens 0 0 1 0 1 1 AnsVarR
 polyTensEqn ans6 = total
         where
             ans6' = shiftLabels6 1 ans6
@@ -361,7 +363,7 @@ polyTensEqn ans6 = total
             tens2 = contrATens2 (0,0) $ ans2 &* interMetric
             total = tens1 &+ tens2
 
-polyDensEqn :: ATens 1 0 1 0 0 0 AnsVarR -> ATens 0 0 1 0 1 1 AnsVarR
+polyDensEqn :: ATens 0 1 1 0 0 0 AnsVarR -> ATens 0 0 1 0 1 1 AnsVarR
 polyDensEqn ans6 = polyTensEqn ans6 &+ (ans2 &* delta3A)
         where
             ans2  = polyAns2
