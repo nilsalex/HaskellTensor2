@@ -336,7 +336,7 @@ encodeTensor, decodeTensor,
 --
 -- ** Tensor Differentiation
 -- *** Partial Derivatives
-partial, partialSymbolic, solveSystem6, redefineVarsSystem6, tryAsATens
+partial, partialSymbolic, solveSystem6, redefineVarsSystem6, tryAsATens, fromRref, compRows
 ) where
 
 import Data.Foldable (toList)
