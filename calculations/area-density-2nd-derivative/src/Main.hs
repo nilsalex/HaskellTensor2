@@ -151,9 +151,4 @@ main = do
           putStrLn "Noether identity 2 :"
           print n2
 
-          print $ toListShow6 ans0
-          print $ toListShow6 ans4
-          print $ toListShow6 ans0''
-          print $ toListShow6 ans4''
-
   return ()

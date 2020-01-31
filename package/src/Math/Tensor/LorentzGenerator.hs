@@ -967,8 +967,8 @@ that occur due to implicit anti-symmetries in 5 or more indices.
 
 evalNodeEta :: I.IntMap Int -> Eta -> Maybe Int
 evalNodeEta iMap (Eta x y)
-            | a == b && a == 0 = Just (-1)
-            | a == b = Just 1
+            | a == b && a == 0 = Just 1
+            | a == b = Just (-1)
             | otherwise = Nothing
              where
                 [a,b] = [(I.!) iMap x, (I.!) iMap y]
