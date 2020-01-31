@@ -114,7 +114,7 @@ eta :: STTens 0 2 (SField Rational)
 eta =  fromListT2 l
             where
                 l = map (\(x,y,z) -> ((Empty,Append (Ind3 x) $ Append (Ind3 y) Empty),SField z))
-                    [(0,0,-1),(1,1,1),(2,2,1),(3,3,1)]
+                    [(0,0,1),(1,1,-1),(2,2,-1),(3,3,-1)]
 
 -- | Minkowski metric lifted to @'ATens'@.
 etaA :: ATens 0 0 0 0 0 2 (SField Rational)
@@ -128,7 +128,7 @@ invEta :: STTens 2 0 (SField Rational)
 invEta =  fromListT2 l
             where
                 l = map (\(x,y,z) -> ((Append (Ind3 x) $ Append (Ind3 y) Empty,Empty),SField z))
-                    [(0,0,-1),(1,1,1),(2,2,1),(3,3,1)]
+                    [(0,0,1),(1,1,-1),(2,2,-1),(3,3,-1)]
 
 -- | Inverse Minkowski metric lifted to @'ATens'@.
 invEtaA :: ATens 0 0 0 0 2 0 (SField Rational)
@@ -139,14 +139,14 @@ etaAbs :: ATens 0 0 0 1 0 0 (SField Rational)
 etaAbs = fromListT6 l
             where
                 l = map (\(x,y) -> ((Empty, Empty, Empty, singletonInd $ Ind9 x, Empty, Empty),SField y))
-                    [(0,-1),(4,1),(7,1),(9,1)]
+                    [(0,1),(4,-1),(7,-1),(9,-1)]
 
 -- | Inverse Minkowski metric with abstract symmetric index pair.
 invEtaAbs :: ATens 0 0 1 0 0 0 (SField Rational)
 invEtaAbs = fromListT6 l
                 where
                     l = map (\(x,y) -> ((Empty, Empty, singletonInd $ Ind9 x, Empty, Empty, Empty), SField y))
-                        [(0,-1),(4,1),(7,1),(9,1)]
+                        [(0,1),(4,-1),(7,-1),(9,-1)]
 
 -- | Covariant spacetime Levi-Civita symbol \(\epsilon_{abcd}\) as type @'ATTens' 0 4 ('SField' 'Rational')@.
 epsilon :: STTens 0 4 (SField Rational)

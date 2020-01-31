@@ -24,43 +24,32 @@ import qualified Data.IntMap.Strict as I
 main = do
 
   let ans0 = fromListT6 [((Empty, Empty, Empty, Empty, Empty, Empty), AnsVar $ I.singleton 1 (SField 1))] :: ATens 0 0 0 0 0 0 AnsVarR
---  let (eta4,eps4,ans4) = mkAnsatzTensorFastAbs 4 symList4 areaList4 :: (AnsatzForestEta, AnsatzForestEpsilon, ATens 1 0 0 0 0 0 AnsVarR)
+--  let (eta4,eps4,ans4) = mkAnsatzTensorFastAbs 4 symList4 areaList4 :: (AnsatzForestEta, AnsatzForestEpsilon, ATens 0 1 0 0 0 0 AnsVarR)
   let ans4 = ZeroTensor :: ATens 0 1 0 0 0 0 AnsVarR
-  let (eta6,eps6,_ans6) = mkAnsatzTensorFastAbs 6 symList6 areaList6 :: (AnsatzForestEta, AnsatzForestEpsilon, ATens 1 0 1 0 0 0 AnsVarR)
-  let (eta8,eps8,_ans8) = mkAnsatzTensorFastAbs 8 symList8 areaList8 :: (AnsatzForestEta, AnsatzForestEpsilon, ATens 2 0 0 0 0 0 AnsVarR)
-  let (eta10_1,eps10_1,_ans10_1) = mkAnsatzTensorFastAbs 10 symList10_1 areaList10_1 :: (AnsatzForestEta, AnsatzForestEpsilon, ATens 2 0 0 0 2 0 AnsVarR)
-  let (eta10_2,eps10_2,_ans10_2) = mkAnsatzTensorFastAbs 10 symList10_2 areaList10_2 :: (AnsatzForestEta, AnsatzForestEpsilon, ATens 2 0 1 0 0 0 AnsVarR)
+  let (eta6,eps6,_ans6) = mkAnsatzTensorFastAbs 6 symList6 areaList6 :: (AnsatzForestEta, AnsatzForestEpsilon, ATens 0 1 0 1 0 0 AnsVarR)
+  let (eta8,eps8,_ans8) = mkAnsatzTensorFastAbs 8 symList8 areaList8 :: (AnsatzForestEta, AnsatzForestEpsilon, ATens 0 2 0 0 0 0 AnsVarR)
+  let (eta10_1,eps10_1,_ans10_1) = mkAnsatzTensorFastAbs 10 symList10_1 areaList10_1 :: (AnsatzForestEta, AnsatzForestEpsilon, ATens 0 2 0 0 0 2 AnsVarR)
+  let (eta10_2,eps10_2,_ans10_2) = mkAnsatzTensorFastAbs 10 symList10_2 areaList10_2 :: (AnsatzForestEta, AnsatzForestEpsilon, ATens 0 2 0 1 0 0 AnsVarR)
 
   let met = fromListT6 $ map (\i -> let s = case i of
                                               0 -> 1
-                                              1 -> 1
-                                              2 -> 1
+                                              1 -> -1
+                                              2 -> -1
                                               3 -> -1
-                                              4 -> -1
-                                              5 -> -1
+                                              4 -> 1
+                                              5 -> 1
                                               6 -> 1
                                               7 -> 1
-                                              8 -> -1
-                                              9 -> -1
-                                              10 -> -1
-                                              11 -> 1
-                                              12 -> -1
-                                              13 -> -1
-                                              14 -> -1
-                                              15 -> 1
-                                              16 -> 1
-                                              17 -> 1
-                                              18 -> 1
-                                              19 -> 1
-                                              20 -> 1
-                                              _  -> error "Ind20 greater than 20"
-                                    in ((Empty, (Ind20 i) `Append` ((Ind20 i) `Append` Empty), Empty, Empty, Empty, Empty), SField s))
-                         [0..20] :: ATens 0 2 0 0 0 0 (SField Rational)
+                                              8 -> 1
+                                              9 -> 1
+                                              _  -> error "Ind9 greater than 9"
+                                    in ((Empty, Empty, (Ind9 i) `Append` ((Ind9 i) `Append` Empty), Empty, Empty, Empty), SField s))
+                         [0..9] :: ATens 0 0 2 0 0 0 (SField Rational)
 
-  let ans6 = contrATens1 (0,0) $ met &* _ans6
-  let ans8 = contrATens1 (0,0) $ contrATens1 (1,2) $ met &* met &* _ans8
-  let ans10_1 = contrATens1 (0,0) $ contrATens1 (1,2) $ met &* met &* _ans10_1
-  let ans10_2 = contrATens1 (0,0) $ contrATens1 (1,2) $ met &* met &* _ans10_2
+  let ans6 = contrATens2 (0,0) $ met &* _ans6
+  let ans8 = _ans8
+  let ans10_1 = contrATens3 (0,0) $ contrATens3 (2,1) $ invEtaA &* invEtaA &* _ans10_1
+  let ans10_2 = contrATens2 (0,0) $ met &* _ans10_2
 
   let r0    = tensorRank6' ans0
   let r4    = tensorRank6' ans4
@@ -161,5 +150,10 @@ main = do
           putStrLn ""
           putStrLn "Noether identity 2 :"
           print n2
+
+          print $ toListShow6 ans0
+          print $ toListShow6 ans4
+          print $ toListShow6 ans0''
+          print $ toListShow6 ans4''
 
   return ()

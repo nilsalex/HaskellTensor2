@@ -285,6 +285,8 @@ toListT,
 -- | __Converting the various @'Tensors'@ with multiple different index types to such typed lists.__
 toListT1, toListT2, toListT3, toListT4, toListT5, toListT6, toListT7, toListT8,
 --
+toListShow1, toListShow2, toListShow3, toListShow4, toListShow5, toListShow6, toListShow7, toListShow8,
+--
 toListT',
 --
 -- | __Converting the various @'Tensors'@ with multiple different index types to such non-typed lists.__
@@ -1449,6 +1451,12 @@ evalTens8 ind indVal = mapTo7 (evalTens ind indVal)
 -- a projection. The following functions apply @'symTens'@ to the index types of the deeper leaf levels, i.e. covariant indices of the 1st index type, contravariant indices of the 2nd index type, etc.
 symTens :: (TIndex k, TAdd v) => (Int,Int) -> Tensor n k v -> Tensor n k v
 symTens inds t = t &+ tensorTrans inds t
+
+{-
+symTens' :: (TIndex k, TAdd v, KnownNat n) => (Int,Int) -> Tensor n k v -> Tensor n k v
+symTens' 0 inds t = t &+ tensorTrans inds t
+symTens' i inds t = fmap (symTens' (i-1) inds) t
+-}
 
 -- | > symATens1 = symTens
 symATens1 :: (TIndex k1, TAdd v) =>

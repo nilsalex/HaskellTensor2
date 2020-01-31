@@ -1335,7 +1335,7 @@ tensor with another tensor with given symmetry one needs to account for the now 
 we used factor less symmetrizer functions.
 --}
 
-evalToTensSym :: Symmetry -> [(I.IntMap Int, IndTupleST n1 0)] -> [(I.IntMap Int, IndTupleST n1 0)] -> AnsatzForestEta -> AnsatzForestEpsilon -> STTens n1 0 AnsVarR
+evalToTensSym :: Symmetry -> [(I.IntMap Int, IndTupleST 0 n1)] -> [(I.IntMap Int, IndTupleST 0 n1)] -> AnsatzForestEta -> AnsatzForestEpsilon -> STTens 0 n1 AnsVarR
 evalToTensSym (p,ap,b,c,bc) evalEta evalEps ansEta ansEps = symT
             where
                 p' = map (\(x,y) -> (x-1,y-1)) p
@@ -1344,17 +1344,17 @@ evalToTensSym (p,ap,b,c,bc) evalEta evalEps ansEta ansEps = symT
                 c' = map (map (subtract 1)) c
                 bc' = map (map (map (subtract 1))) bc
                 tens = evalToTens evalEta evalEps ansEta ansEps
-                symT = foldr cyclicBlockSymATens1 (
-                            foldr cyclicSymATens1 (
-                                foldr symBlockATens1 (
-                                    foldr aSymATens1 (
+                symT = foldr cyclicBlockSymATens2 (
+                            foldr cyclicSymATens2 (
+                                foldr symBlockATens2 (
+                                    foldr aSymATens2 (
                                         foldr symATens1 tens p'
                                         ) ap'
                                     ) b'
                                 ) c'
                             ) bc'
 
-evalToTens :: [(I.IntMap Int, IndTupleST n1 0)] -> [(I.IntMap Int, IndTupleST n1 0)] -> AnsatzForestEta -> AnsatzForestEpsilon -> STTens n1 0 AnsVarR
+evalToTens :: [(I.IntMap Int, IndTupleST 0 n1)] -> [(I.IntMap Int, IndTupleST 0 n1)] -> AnsatzForestEta -> AnsatzForestEpsilon -> STTens 0 n1 AnsVarR
 evalToTens evalEta evalEps ansEta ansEps = tens
             where
                 etaL = evalAllTensorEta evalEta ansEta
@@ -1367,7 +1367,7 @@ evalToTens evalEta evalEps ansEta ansEps = tens
 
 --eval to abstract tensor type taking into account possible block symmetries and multiplicity of the ansätze
 
-evalToTensAbs :: [(I.IntMap Int, Int, [IndTupleAbs n1 0 n2 0 n3 0])] -> [(I.IntMap Int, Int, [IndTupleAbs n1 0 n2 0 n3 0])] -> AnsatzForestEta -> AnsatzForestEpsilon -> ATens n1 0 n2 0 n3 0 AnsVarR
+evalToTensAbs :: [(I.IntMap Int, Int, [IndTupleAbs 0 n1 0 n2 0 n3])] -> [(I.IntMap Int, Int, [IndTupleAbs 0 n1 0 n2 0 n3])] -> AnsatzForestEta -> AnsatzForestEpsilon -> ATens 0 n1 0 n2 0 n3 AnsVarR
 evalToTensAbs evalEta evalEps ansEta ansEps = fromListT6 etaRmL &+ fromListT6 epsRmL
             where
                 etaL = evalAllTensorEtaAbs evalEta ansEta
@@ -1385,10 +1385,10 @@ mkEvalMap i = I.fromList . zip [1..i]
 mkEvalMaps :: [[Int]] -> [I.IntMap Int]
 mkEvalMaps l = let s = length (head l) in map (mkEvalMap s) l
 
-mkEvalMapsInds :: forall (n :: Nat). KnownNat n => [[Int]] -> [(I.IntMap Int, IndTupleST n 0)]
-mkEvalMapsInds l = let s = length (head l) in map (\x -> (mkEvalMap s x, (fromListUnsafe $ map toEnum x, Empty))) l
+mkEvalMapsInds :: forall (n :: Nat). KnownNat n => [[Int]] -> [(I.IntMap Int, IndTupleST 0 n)]
+mkEvalMapsInds l = let s = length (head l) in map (\x -> (mkEvalMap s x, (Empty, fromListUnsafe $ map toEnum x))) l
 
-mkAllEvalMaps :: forall (n :: Nat). KnownNat n => Symmetry -> [[Int]] -> ([I.IntMap Int], [I.IntMap Int], [(I.IntMap Int, IndTupleST n 0)], [(I.IntMap Int, IndTupleST n 0)])
+mkAllEvalMaps :: forall (n :: Nat). KnownNat n => Symmetry -> [[Int]] -> ([I.IntMap Int], [I.IntMap Int], [(I.IntMap Int, IndTupleST 0 n)], [(I.IntMap Int, IndTupleST 0 n)])
 mkAllEvalMaps sym l = (evalMEtaRed, evalMEpsRed, evalMEtaInds, evalMEpsInds)
         where
             evalLEta = filter isEtaList l
@@ -1401,7 +1401,7 @@ mkAllEvalMaps sym l = (evalMEtaRed, evalMEpsRed, evalMEtaInds, evalMEpsInds)
             evalMEpsInds = mkEvalMapsInds evalLEps
 
 
-mkAllEvalMapsAbs :: Symmetry -> [([Int], Int, [IndTupleAbs n1 0 n2 0 n3 0])] -> ([I.IntMap Int], [I.IntMap Int], [(I.IntMap Int, Int, [IndTupleAbs n1 0 n2 0 n3 0])], [(I.IntMap Int, Int, [IndTupleAbs n1 0 n2 0 n3 0])])
+mkAllEvalMapsAbs :: Symmetry -> [([Int], Int, [IndTupleAbs 0 n1 0 n2 0 n3])] -> ([I.IntMap Int], [I.IntMap Int], [(I.IntMap Int, Int, [IndTupleAbs 0 n1 0 n2 0 n3])], [(I.IntMap Int, Int, [IndTupleAbs 0 n1 0 n2 0 n3])])
 mkAllEvalMapsAbs sym l = (evalMEtaRed, evalMEpsRed, evalMEtaInds, evalMEpsInds)
         where
             (headList,_,_) = head l
@@ -1416,7 +1416,7 @@ mkAllEvalMapsAbs sym l = (evalMEtaRed, evalMEpsRed, evalMEtaInds, evalMEpsInds)
             evalMEpsInds = map (\(x,y,z) -> (mkEvalMap ord x, y, z)) evalLEps
 
 -- | The function is similar to @'mkAnsatzTensorFastSym'@ yet it uses an algorithm that prioritizes memory usage over fast computation times.
-mkAnsatzTensorIncrementalSym :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> [[Int]] -> (AnsatzForestEta, AnsatzForestEpsilon, STTens n 0 AnsVarR)
+mkAnsatzTensorIncrementalSym :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> [[Int]] -> (AnsatzForestEta, AnsatzForestEpsilon, STTens 0 n AnsVarR)
 mkAnsatzTensorIncrementalSym ord symmetries evalL = (ansEta, ansEps, tens)
         where
             (evalMEtaRed, evalMEpsRed, evalMEtaInds, evalMEpsInds) = mkAllEvalMaps symmetries evalL
@@ -1424,7 +1424,7 @@ mkAnsatzTensorIncrementalSym ord symmetries evalL = (ansEta, ansEps, tens)
             tens = evalToTensSym symmetries evalMEtaInds evalMEpsInds ansEta ansEps
 
 -- | The function is similar to @'mkAnsatzTensorFast'@ yet it uses an algorithm that prioritizes memory usage over fast computation times.
-mkAnsatzTensorIncremental :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> [[Int]] -> (AnsatzForestEta, AnsatzForestEpsilon, STTens n 0 AnsVarR)
+mkAnsatzTensorIncremental :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> [[Int]] -> (AnsatzForestEta, AnsatzForestEpsilon, STTens 0 n AnsVarR)
 mkAnsatzTensorIncremental ord symmetries evalL = (ansEta, ansEps, tens)
         where
             (evalMEtaRed, evalMEpsRed, evalMEtaInds, evalMEpsInds) = mkAllEvalMaps symmetries evalL
@@ -1432,7 +1432,7 @@ mkAnsatzTensorIncremental ord symmetries evalL = (ansEta, ansEps, tens)
             tens = evalToTens evalMEtaInds evalMEpsInds ansEta ansEps
 
 -- | The function is similar to @'mkAnsatzTensorFastAbs'@ yet it uses an algorithm that prioritizes memory usage over fast computation times.
-mkAnsatzTensorIncrementalAbs :: Int -> Symmetry -> [([Int], Int, [IndTupleAbs n1 0 n2 0 n3 0])] -> (AnsatzForestEta, AnsatzForestEpsilon, ATens n1 0 n2 0 n3 0 AnsVarR)
+mkAnsatzTensorIncrementalAbs :: Int -> Symmetry -> [([Int], Int, [IndTupleAbs 0 n1 0 n2 0 n3])] -> (AnsatzForestEta, AnsatzForestEpsilon, ATens 0 n1 0 n2 0 n3 AnsVarR)
 mkAnsatzTensorIncrementalAbs ord symmetries evalL = (ansEta, ansEps, tens)
         where
             (evalMEtaRed, evalMEpsRed, evalMEtaInds, evalMEpsInds) = mkAllEvalMapsAbs symmetries evalL
@@ -1493,7 +1493,7 @@ mkAnsatzFast ord symmetries evalMEtaRed evalMEpsRed = (ansEtaRed, ansEpsRed)
 -- The additional argument of type @[['Int']]@ is used to provide the information of all (by means of the symmetry at hand) independent components of the ansätze.
 -- Explicit examples how this information can be computed are provided by the functions for @'areaList4'@, ... and also by @'metricList2'@, ... .
 -- The output is given as spacetime tensor @'STTens'@ and is explicitly symmetrized.
-mkAnsatzTensorFastSym :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> [[Int]]-> (AnsatzForestEta, AnsatzForestEpsilon, STTens n 0 AnsVarR)
+mkAnsatzTensorFastSym :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> [[Int]]-> (AnsatzForestEta, AnsatzForestEpsilon, STTens 0 n AnsVarR)
 mkAnsatzTensorFastSym ord symmetries evalL = (ansEta, ansEps, tens)
         where
             (evalMEtaRed, evalMEpsRed, evalMEtaInds, evalMEpsInds) = mkAllEvalMaps symmetries evalL
@@ -1505,7 +1505,7 @@ mkAnsatzTensorFastSym ord symmetries evalL = (ansEta, ansEps, tens)
 -- | This function provides the same functionality as @'mkAnsatzTensorFast'@ but without explicit symmetrization of the result. In other words from each symmetrization sum only the first
 -- summand is returned. This is advantageous as for large expressions explicit symmetrization might be expensive and further is sometime simply not needed as the result might for instance be contracted against
 -- a symmetric object, which thus enforces the symmetry, in further steps of the computation.
-mkAnsatzTensorFast :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> [[Int]]-> (AnsatzForestEta, AnsatzForestEpsilon, STTens n 0 AnsVarR)
+mkAnsatzTensorFast :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> [[Int]]-> (AnsatzForestEta, AnsatzForestEpsilon, STTens 0 n AnsVarR)
 mkAnsatzTensorFast ord symmetries evalL = (ansEta, ansEps, tens)
         where
             (evalMEtaRed, evalMEpsRed, evalMEtaInds, evalMEpsInds) = mkAllEvalMaps symmetries evalL
@@ -1519,7 +1519,7 @@ mkAnsatzTensorFast ord symmetries evalL = (ansEta, ansEps, tens)
 -- as before labels the independent index combinations, the second element labels the corresponding multiplicity under the present symmetry. The multiplicity simply encodes how many different combinations of spacetime indices
 -- correspond to the same abstract index tuple. The last element of the input triplets labels the individual abstract index combinations that then correspond to the provided spacetime indices. If some of the initial symmetries
 -- are still present when using abstract indices this last element might consists of more then one index combination. The appropriate value that is retrieved from the two ansatz forests is then written to each of the provided index combinations.
-mkAnsatzTensorFastAbs :: Int -> Symmetry -> [([Int], Int, [IndTupleAbs n1 0 n2 0 n3 0])] -> (AnsatzForestEta, AnsatzForestEpsilon, ATens n1 0 n2 0 n3 0 AnsVarR)
+mkAnsatzTensorFastAbs :: Int -> Symmetry -> [([Int], Int, [IndTupleAbs 0 n1 0 n2 0 n3])] -> (AnsatzForestEta, AnsatzForestEpsilon, ATens 0 n1 0 n2 0 n3 AnsVarR)
 mkAnsatzTensorFastAbs ord symmetries evalL = (ansEta, ansEps, tens)
         where
             (evalMEtaRed, evalMEpsRed, evalMEtaInds, evalMEpsInds) = mkAllEvalMapsAbs symmetries evalL
@@ -1707,14 +1707,14 @@ allList ord (syms,aSyms,_,_,_) =  allList' ord syms aSyms [] []
 --use the above functions to construct ansätze without providing eval lists by hand
 
 -- | The function is similar to @'mkAnsatzTensorFastSym''@ yet it uses an algorithm that prioritizes memory usage over fast computation times.
-mkAnsatzTensorIncrementalSym' :: forall (n :: Nat). KnownNat n =>  Int -> Symmetry -> (AnsatzForestEta, AnsatzForestEpsilon, STTens n 0 AnsVarR)
+mkAnsatzTensorIncrementalSym' :: forall (n :: Nat). KnownNat n =>  Int -> Symmetry -> (AnsatzForestEta, AnsatzForestEpsilon, STTens 0 n AnsVarR)
 mkAnsatzTensorIncrementalSym' ord symmetries = mkAnsatzTensorIncrementalSym ord symmetries evalL
         where
             evalL = filter (`filterAllSym` symmetries) $ allList ord symmetries
 
 -- | Provides the same functionality as @'mkAnsatzTensorFastSym'@ with the difference that the list of independent index combinations is automatically computed form the present symmetry.
 -- Note that this yields slightly higher computation costs.
-mkAnsatzTensorFastSym' :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> (AnsatzForestEta, AnsatzForestEpsilon, STTens n 0 AnsVarR)
+mkAnsatzTensorFastSym' :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> (AnsatzForestEta, AnsatzForestEpsilon, STTens 0 n AnsVarR)
 mkAnsatzTensorFastSym' ord symmetries = mkAnsatzTensorFastSym ord symmetries evalL
         where
             evalL = filter (`filterAllSym` symmetries) $ allList ord symmetries
@@ -1722,14 +1722,14 @@ mkAnsatzTensorFastSym' ord symmetries = mkAnsatzTensorFastSym ord symmetries eva
 --and without explicit symmetrization
 
 -- | The function is similar to @'mkAnsatzTensorFast''@ yet it uses an algorithm that prioritizes memory usage over fast computation times.
-mkAnsatzTensorIncremental' :: forall (n :: Nat). KnownNat n =>  Int -> Symmetry -> (AnsatzForestEta, AnsatzForestEpsilon, STTens n 0 AnsVarR)
+mkAnsatzTensorIncremental' :: forall (n :: Nat). KnownNat n =>  Int -> Symmetry -> (AnsatzForestEta, AnsatzForestEpsilon, STTens 0 n AnsVarR)
 mkAnsatzTensorIncremental' ord symmetries = mkAnsatzTensorIncremental ord symmetries evalL
         where
             evalL = filter (`filterAllSym` symmetries) $ allList ord symmetries
 
 -- | Provides the same functionality as @'mkAnsatzTensorFast'@ with the difference that the list of independent index combinations is automatically computed form the present symmetry.
 -- Note that this yields slightly higher computation costs.
-mkAnsatzTensorFast' :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> (AnsatzForestEta, AnsatzForestEpsilon, STTens n 0 AnsVarR)
+mkAnsatzTensorFast' :: forall (n :: Nat). KnownNat n => Int -> Symmetry -> (AnsatzForestEta, AnsatzForestEpsilon, STTens 0 n AnsVarR)
 mkAnsatzTensorFast' ord symmetries = mkAnsatzTensorFast ord symmetries evalL
         where
             evalL = filter (`filterAllSym` symmetries) $ allList ord symmetries
@@ -1770,212 +1770,212 @@ iMult2 _ = error "expected two indices"
 --Area metric eval lists
 
 -- | Evaluation list for \(a^A \).
-areaList4 :: [([Int], Int, [IndTupleAbs 1 0 0 0 0 0])]
+areaList4 :: [([Int], Int, [IndTupleAbs 0 1 0 0 0 0])]
 areaList4 = list
       where
           trianArea = trianMapArea
-          list = [ let a' = (I.!) trianArea a in (a', areaMult a', [(singletonInd (Ind20 $ a-1), Empty, Empty, Empty, Empty, Empty)]) | a <- [1..21] ]
+          list = [ let a' = (I.!) trianArea a in (a', areaMult a', [(Empty, singletonInd (Ind20 $ a-1), Empty, Empty, Empty, Empty)]) | a <- [1..21] ]
 
 -- | Evaluation list for \(a^{AI} \).
-areaList6 :: [([Int], Int, [IndTupleAbs 1 0 1 0 0 0])]
+areaList6 :: [([Int], Int, [IndTupleAbs 0 1 0 1 0 0])]
 areaList6 = list
       where
           trian2 = trianMap2
           trianArea = trianMapArea
-          list = [ let (a',i') = ((I.!) trianArea a, (I.!) trian2 i) in  (a' ++ i', areaMult a' * iMult2 i', [(singletonInd (Ind20 $ a-1), Empty, singletonInd (Ind9 $ i-1), Empty, Empty, Empty)]) | a <- [1..21], i <- [1..10]]
+          list = [ let (a',i') = ((I.!) trianArea a, (I.!) trian2 i) in  (a' ++ i', areaMult a' * iMult2 i', [(Empty, singletonInd (Ind20 $ a-1), Empty, singletonInd (Ind9 $ i-1), Empty, Empty)]) | a <- [1..21], i <- [1..10]]
 
 -- | Evaluation list for \(a^{A B}\). Note that also when using the abstract indices this ansatz still features the \( A \leftrightarrow B \) symmetry.
-areaList8 :: [([Int], Int, [IndTupleAbs 2 0 0 0 0 0])]
+areaList8 :: [([Int], Int, [IndTupleAbs 0 2 0 0 0 0])]
 areaList8 = list
       where
           trianArea = trianMapArea
-          list = [ let (a',b') = ((I.!) trianArea a, (I.!) trianArea b) in  (a' ++ b', areaMult a' * areaMult b', map (\[_a,_b] -> (Append (Ind20 $ _a-1) $ singletonInd (Ind20 $ _b-1), Empty, Empty, Empty, Empty, Empty)) $ nub $ permutations [a,b] )  | a <- [1..21], b <- [a..21]]
+          list = [ let (a',b') = ((I.!) trianArea a, (I.!) trianArea b) in  (a' ++ b', areaMult a' * areaMult b', map (\[_a,_b] -> (Empty, Append (Ind20 $ _a-1) $ singletonInd (Ind20 $ _b-1), Empty, Empty, Empty, Empty)) $ nub $ permutations [a,b] )  | a <- [1..21], b <- [a..21]]
 
 -- | Evaluation list for \(a^{Ap Bq}\). Note that also when using the abstract indices this ansatz still features the \( (Ap) \leftrightarrow (Bq) \) symmetry.
-areaList10_1 :: [([Int], Int, [IndTupleAbs 2 0 0 0 2 0])]
+areaList10_1 :: [([Int], Int, [IndTupleAbs 0 2 0 0 0 2])]
 areaList10_1 = list
       where
           trianArea = trianMapArea
-          list = [ let (a',b') = ((I.!) trianArea a, (I.!) trianArea b) in  (a' ++ p : b' ++ [q], areaMult a' * areaMult b', map (\[[_a,_p],[_b,_q]] -> (Append (Ind20 $ _a-1) $ singletonInd (Ind20 $ _b-1), Empty, Empty, Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q), Empty)) $ nub $ permutations [[a,p],[b,q]]) | a <- [1..21], b <- [a..21], p <- [0..3], q <- [0..3],  not (a==b && p>q)]
+          list = [ let (a',b') = ((I.!) trianArea a, (I.!) trianArea b) in  (a' ++ p : b' ++ [q], areaMult a' * areaMult b', map (\[[_a,_p],[_b,_q]] -> (Empty, Append (Ind20 $ _a-1) $ singletonInd (Ind20 $ _b-1), Empty, Empty, Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q))) $ nub $ permutations [[a,p],[b,q]]) | a <- [1..21], b <- [a..21], p <- [0..3], q <- [0..3],  not (a==b && p>q)]
 
 -- | Evaluation list for \(a^{ABI} \).
-areaList10_2 :: [([Int], Int, [IndTupleAbs 2 0 1 0 0 0])]
+areaList10_2 :: [([Int], Int, [IndTupleAbs 0 2 0 1 0 0])]
 areaList10_2 = list
       where
           trian2 = trianMap2
           trianArea = trianMapArea
-          list = [ let (a',b',i') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trian2 i) in  (a' ++ b' ++ i', areaMult a' * areaMult b' * iMult2 i', [ (Append (Ind20 $ a-1) $ singletonInd (Ind20 $ b-1), Empty, singletonInd (Ind9 $ i-1), Empty, Empty, Empty)] ) | a <- [1..21], b <- [1..21], i <- [1..10] ]
+          list = [ let (a',b',i') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trian2 i) in  (a' ++ b' ++ i', areaMult a' * areaMult b' * iMult2 i', [ (Empty, Append (Ind20 $ a-1) $ singletonInd (Ind20 $ b-1), Empty, singletonInd (Ind9 $ i-1), Empty, Empty)] ) | a <- [1..21], b <- [1..21], i <- [1..10] ]
 
 -- | Evaluation list for \(a^{ABC} \).  Note that also when using the abstract indices this ansatz still features the symmetry under arbitrary permutations of \( ABC\).
-areaList12 ::  [([Int], Int, [IndTupleAbs 3 0 0 0 0 0])]
+areaList12 ::  [([Int], Int, [IndTupleAbs 0 3 0 0 0 0])]
 areaList12 = list
       where
           trianArea = trianMapArea
-          list = [ let (a',b',c') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c) in  (a' ++ b' ++ c', areaMult a' * areaMult b' * areaMult c', map (\[_a,_b,_c] -> (Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ _c-1), Empty, Empty, Empty, Empty, Empty)) $ nub $ permutations [a,b,c] )| a <- [1..21], b <- [a..21], c <- [b..21] ]
+          list = [ let (a',b',c') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c) in  (a' ++ b' ++ c', areaMult a' * areaMult b' * areaMult c', map (\[_a,_b,_c] -> (Empty, Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ _c-1), Empty, Empty, Empty, Empty)) $ nub $ permutations [a,b,c] )| a <- [1..21], b <- [a..21], c <- [b..21] ]
 
 --AI:BJ
-areaList12_1 ::  [([Int], Int, [IndTupleAbs 2 0 2 0 0 0])]
+areaList12_1 ::  [([Int], Int, [IndTupleAbs 0 2 0 2 0 0])]
 areaList12_1 = list
       where
           trian2 = trianMap2
           trianArea = trianMapArea
-          list = [ let (a',i',b',j') = ((I.!) trianArea a, (I.!) trian2 i, (I.!) trianArea b, (I.!) trian2 j) in  (a' ++ i' ++ b' ++ j' , areaMult a' * areaMult b' * iMult2 i' * iMult2 j', map (\[[_a,_i],[_b,_j]] ->  (Append (Ind20 $ _a-1) $ singletonInd (Ind20 $ _b-1), Empty, Append (Ind9 $ _i-1) $ singletonInd (Ind9 $ _j-1), Empty, Empty, Empty)) $ nub $ permutations [[a,i],[b,j]] ) | a <- [1..21], b <- [a..21], i <- [1..10], j <- [1..10], not (a==b && i>j) ]
+          list = [ let (a',i',b',j') = ((I.!) trianArea a, (I.!) trian2 i, (I.!) trianArea b, (I.!) trian2 j) in  (a' ++ i' ++ b' ++ j' , areaMult a' * areaMult b' * iMult2 i' * iMult2 j', map (\[[_a,_i],[_b,_j]] ->  (Empty, Append (Ind20 $ _a-1) $ singletonInd (Ind20 $ _b-1), Empty, Append (Ind9 $ _i-1) $ singletonInd (Ind9 $ _j-1), Empty, Empty)) $ nub $ permutations [[a,i],[b,j]] ) | a <- [1..21], b <- [a..21], i <- [1..10], j <- [1..10], not (a==b && i>j) ]
 
 -- | Evaluation list for \(a^{ABp Cq}\). Note that also when using the abstract indices this ansatz still features the \( (Bp) \leftrightarrow (Cq) \) symmetry.
-areaList14_1 :: [([Int], Int, [IndTupleAbs 3 0 0 0 2 0])]
+areaList14_1 :: [([Int], Int, [IndTupleAbs 0 3 0 0 0 2])]
 areaList14_1 = list
       where
           trianArea = trianMapArea
-          list = [ let (a',b',c') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c) in  (a' ++ b' ++ p : c' ++ [q], areaMult a' * areaMult b' * areaMult c', map (\[[_b,_p],[_c,_q]] -> (Append (Ind20 $ a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ _c-1), Empty, Empty, Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q), Empty)) $ nub $ permutations [[b,p],[c,q]]) | a <- [1..21], b <- [1..21], c <- [b..21], p <- [0..3], q <- [0..3], not (b==c && p>q) ]
+          list = [ let (a',b',c') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c) in  (a' ++ b' ++ p : c' ++ [q], areaMult a' * areaMult b' * areaMult c', map (\[[_b,_p],[_c,_q]] -> (Empty, Append (Ind20 $ a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ _c-1), Empty, Empty, Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q))) $ nub $ permutations [[b,p],[c,q]]) | a <- [1..21], b <- [1..21], c <- [b..21], p <- [0..3], q <- [0..3], not (b==c && p>q) ]
 
 -- | Evaluation list for \(a^{A B C I}\). Note that also when using the abstract indices this ansatz still features the \( (A) \leftrightarrow (B) \) symmetry.
-areaList14_2 :: [([Int], Int, [IndTupleAbs 3 0 1 0 0 0])]
+areaList14_2 :: [([Int], Int, [IndTupleAbs 0 3 0 1 0 0])]
 areaList14_2 = list
       where
           trian2 = trianMap2
           trianArea = trianMapArea
-          list = [ let (a',b',c',i') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trian2 i) in ( a' ++ b' ++ c' ++ i', areaMult a' * areaMult b' * areaMult c' * iMult2 i', map (\[_a,_b] -> (Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ c-1), Empty, singletonInd (Ind9 $ i-1), Empty, Empty, Empty)) $ nub $ permutations [a,b] ) | a <- [1..21], b <- [a..21], c <- [1..21], i <- [1..10] ]
+          list = [ let (a',b',c',i') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trian2 i) in ( a' ++ b' ++ c' ++ i', areaMult a' * areaMult b' * areaMult c' * iMult2 i', map (\[_a,_b] -> (Empty, Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ c-1), Empty, singletonInd (Ind9 $ i-1), Empty, Empty)) $ nub $ permutations [a,b] ) | a <- [1..21], b <- [a..21], c <- [1..21], i <- [1..10] ]
 
 --Ap:Bq:CI
-areaList16_1 :: [([Int], Int, [IndTupleAbs 3 0 1 0 2 0])]
+areaList16_1 :: [([Int], Int, [IndTupleAbs 0 3 0 1 0 2])]
 areaList16_1 = list
       where
           trian2 = trianMap2
           trianArea = trianMapArea
-          list = [ let (a',b',c',i') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trian2 i) in (a' ++ p : b' ++ q : c' ++ i' , areaMult a' * areaMult b' * areaMult c' * iMult2 i', map (\[[_a,_p],[_b,_q]] -> (Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ c-1), Empty, singletonInd (Ind9 $ i-1), Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q), Empty)) $ nub $ permutations [[a,p],[b,q]]) | a <- [1..21], b <- [a..21], c <- [1..21], i <- [1..10], p <- [0..3], q <- [0..3], not (a==b && p>q) ]
+          list = [ let (a',b',c',i') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trian2 i) in (a' ++ p : b' ++ q : c' ++ i' , areaMult a' * areaMult b' * areaMult c' * iMult2 i', map (\[[_a,_p],[_b,_q]] -> (Empty, Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ c-1), Empty, singletonInd (Ind9 $ i-1), Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q))) $ nub $ permutations [[a,p],[b,q]]) | a <- [1..21], b <- [a..21], c <- [1..21], i <- [1..10], p <- [0..3], q <- [0..3], not (a==b && p>q) ]
 
 --A:BI:CJ
-areaList16_2 :: [([Int], Int, [IndTupleAbs 3 0 2 0 0 0])]
+areaList16_2 :: [([Int], Int, [IndTupleAbs 0 3 0 2 0 0])]
 areaList16_2 = list
       where
           trian2 = trianMap2
           trianArea = trianMapArea
-          list = [let (a',b',c',i', j') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trian2 i, (I.!) trian2 j) in  (a' ++ b' ++ i' ++ c' ++ j', areaMult a' * areaMult b' * areaMult c' * iMult2 i' * iMult2 j', map (\[[_b,_i],[_c,_j]] -> (Append (Ind20 $ a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ _c-1), Empty, Append (Ind9 $ _i-1) $ singletonInd (Ind9 $ _j-1), Empty, Empty, Empty) ) $ nub $ permutations [[b,i],[c,j]])| a <- [1..21], b <- [1..21], c <- [b..21], i <- [1..10], j <- [1..10], not (b==c && i>j)]
+          list = [let (a',b',c',i', j') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trian2 i, (I.!) trian2 j) in  (a' ++ b' ++ i' ++ c' ++ j', areaMult a' * areaMult b' * areaMult c' * iMult2 i' * iMult2 j', map (\[[_b,_i],[_c,_j]] -> (Empty, Append (Ind20 $ a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ _c-1), Empty, Append (Ind9 $ _i-1) $ singletonInd (Ind9 $ _j-1), Empty, Empty) ) $ nub $ permutations [[b,i],[c,j]])| a <- [1..21], b <- [1..21], c <- [b..21], i <- [1..10], j <- [1..10], not (b==c && i>j)]
 
 --AI:BJ:CK
-areaList18 :: [([Int], Int, [IndTupleAbs 3 0 3 0 0 0])]
+areaList18 :: [([Int], Int, [IndTupleAbs 0 3 0 3 0 0])]
 areaList18 = list
       where
           trian2 = trianMap2
           trianArea = trianMapArea
-          list = [ let (a',b',c',i', j', k') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trian2 i, (I.!) trian2 j, (I.!) trian2 k) in  (a' ++ i' ++ b' ++ j' ++ c' ++ k', areaMult a' * areaMult b' * areaMult c' * iMult2 i' * iMult2 j' * iMult2 k', map (\[[_a,_i],[_b,_j],[_c,_k]] -> (Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ _c-1), Empty, Append (Ind9 $ _i-1) $ Append (Ind9 $ _j-1) $ singletonInd (Ind9 $ _k-1), Empty, Empty, Empty) ) $ nub $ permutations [[a,i],[b,j],[c,k]]) | a <- [1..21], b <- [a..21], c <- [b..21], i <- [1..10], j <- [1..10], not (a==b && i>j), k <- [1..10], not (b==c && j>k) ]
+          list = [ let (a',b',c',i', j', k') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trian2 i, (I.!) trian2 j, (I.!) trian2 k) in  (a' ++ i' ++ b' ++ j' ++ c' ++ k', areaMult a' * areaMult b' * areaMult c' * iMult2 i' * iMult2 j' * iMult2 k', map (\[[_a,_i],[_b,_j],[_c,_k]] -> (Empty, Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ _c-1), Empty, Append (Ind9 $ _i-1) $ Append (Ind9 $ _j-1) $ singletonInd (Ind9 $ _k-1), Empty, Empty) ) $ nub $ permutations [[a,i],[b,j],[c,k]]) | a <- [1..21], b <- [a..21], c <- [b..21], i <- [1..10], j <- [1..10], not (a==b && i>j), k <- [1..10], not (b==c && j>k) ]
 
 --order 4
 
 --A:B:C_D
-areaList16 ::  [([Int], Int, [IndTupleAbs 4 0 0 0 0 0])]
+areaList16 ::  [([Int], Int, [IndTupleAbs 0 4 0 0 0 0])]
 areaList16 = list
       where
           trianArea = trianMapArea
-          list = [ let (a',b',c', d') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trianArea d) in  (a' ++ b' ++ c' ++ d', areaMult a' * areaMult b' * areaMult c' * areaMult d', map (\[_a,_b,_c,_d] -> (Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ Append (Ind20 $ _c-1) $ singletonInd (Ind20 $ _d-1), Empty, Empty, Empty, Empty, Empty)) $ nub $ permutations [a,b,c,d] )| a <- [1..21], b <- [a..21], c <- [b..21], d <- [c..21] ]
+          list = [ let (a',b',c', d') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trianArea d) in  (a' ++ b' ++ c' ++ d', areaMult a' * areaMult b' * areaMult c' * areaMult d', map (\[_a,_b,_c,_d] -> (Empty, Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ Append (Ind20 $ _c-1) $ singletonInd (Ind20 $ _d-1), Empty, Empty, Empty, Empty)) $ nub $ permutations [a,b,c,d] )| a <- [1..21], b <- [a..21], c <- [b..21], d <- [c..21] ]
 
 --A:B:C:DI
-areaList18_2 ::  [( [Int], Int, [IndTupleAbs 4 0 1 0 0 0])]
+areaList18_2 ::  [( [Int], Int, [IndTupleAbs 0 4 0 1 0 0])]
 areaList18_2 = list
       where
           trian2 = trianMap2
           trianArea = trianMapArea
-          list = [ let (a',b',c',d',i') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trianArea d, (I.!) trian2 i) in  (a' ++ b' ++ c'++d'++i', areaMult a' * areaMult b' * areaMult c' * areaMult d' * iMult2 i', map (\[_a,_b,_c] -> (Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ Append (Ind20 $ _c-1) (singletonInd (Ind20 $ d-1)), Empty, singletonInd (Ind9 $ i-1), Empty, Empty, Empty) ) $ nub $ permutations [a,b,c] ) | a <- [1..21], b <- [a..21], c <- [b..21], d <- [1..21], i <- [1..10] ]
+          list = [ let (a',b',c',d',i') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trianArea d, (I.!) trian2 i) in  (a' ++ b' ++ c'++d'++i', areaMult a' * areaMult b' * areaMult c' * areaMult d' * iMult2 i', map (\[_a,_b,_c] -> (Empty, Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ Append (Ind20 $ _c-1) (singletonInd (Ind20 $ d-1)), Empty, singletonInd (Ind9 $ i-1), Empty, Empty) ) $ nub $ permutations [a,b,c] ) | a <- [1..21], b <- [a..21], c <- [b..21], d <- [1..21], i <- [1..10] ]
 
 --A:B:Cp:Dq
-areaList18_3 ::  [([Int], Int, [IndTupleAbs 4 0 0 0 2 0])]
+areaList18_3 ::  [([Int], Int, [IndTupleAbs 0 4 0 0 0 2])]
 areaList18_3 = list
       where
           trianArea = trianMapArea
-          list = [ let (a',b',c',d') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trianArea d) in  (a' ++ b' ++ c'++ p : d'++[q], areaMult a' * areaMult b' * areaMult c' * areaMult d', map ( \(_a,_b,_c,_p,_d,_q) -> (Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ Append (Ind20 $ _c-1) (singletonInd (Ind20 $ _d-1)), Empty, Empty, Empty, Append (Ind3 _p) (singletonInd (Ind3 _q)), Empty) ) $ nub [(a,b,c,p,d,q),(b,a,c,p,d,q),(a,b,d,q,c,p),(b,a,d,q,c,p)] ) | a <- [1..21], b <- [a..21], c <- [1..21], d <- [c..21], p <- [0..3], q <- [0..3] , not (c == d && p > q) ]
+          list = [ let (a',b',c',d') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trianArea d) in  (a' ++ b' ++ c'++ p : d'++[q], areaMult a' * areaMult b' * areaMult c' * areaMult d', map ( \(_a,_b,_c,_p,_d,_q) -> (Empty, Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ Append (Ind20 $ _c-1) (singletonInd (Ind20 $ _d-1)), Empty, Empty, Empty, Append (Ind3 _p) (singletonInd (Ind3 _q))) ) $ nub [(a,b,c,p,d,q),(b,a,c,p,d,q),(a,b,d,q,c,p),(b,a,d,q,c,p)] ) | a <- [1..21], b <- [a..21], c <- [1..21], d <- [c..21], p <- [0..3], q <- [0..3] , not (c == d && p > q) ]
 
 --order 5
 
-areaList20 ::  [( [Int], Int, [IndTupleAbs 5 0 0 0 0 0])]
+areaList20 ::  [( [Int], Int, [IndTupleAbs 0 5 0 0 0 0])]
 areaList20 = list
       where
           trianArea = trianMapArea
-          list = [ let (a',b',c', d', e') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trianArea d, (I.!) trianArea e) in  (a' ++ b' ++ c' ++ d' ++ e', areaMult a' * areaMult b' * areaMult c' * areaMult d' * areaMult e', map (\[_a,_b,_c,_d,_e] -> (Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ Append (Ind20 $ _c-1) $ Append (Ind20 $ _d-1) $ singletonInd (Ind20 $ _e-1), Empty, Empty, Empty, Empty, Empty)) $ nub $ permutations [a,b,c,d,e] )| a <- [1..21], b <- [a..21], c <- [b..21], d <- [c..21], e <- [d..21] ]
+          list = [ let (a',b',c', d', e') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c, (I.!) trianArea d, (I.!) trianArea e) in  (a' ++ b' ++ c' ++ d' ++ e', areaMult a' * areaMult b' * areaMult c' * areaMult d' * areaMult e', map (\[_a,_b,_c,_d,_e] -> (Empty, Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ Append (Ind20 $ _c-1) $ Append (Ind20 $ _d-1) $ singletonInd (Ind20 $ _e-1), Empty, Empty, Empty, Empty)) $ nub $ permutations [a,b,c,d,e] )| a <- [1..21], b <- [a..21], c <- [b..21], d <- [c..21], e <- [d..21] ]
 
 --for the kinetic Ansätze for the Rom calculations -> extra symmetry
 
 --Ap:Bq
-areaList10Rom :: [( [Int], Int, [IndTupleAbs 2 0 0 0 2 0])]
+areaList10Rom :: [( [Int], Int, [IndTupleAbs 0 2 0 0 0 2])]
 areaList10Rom = list
       where
           trianArea = trianMapArea
-          list = [ let (a',b') = ((I.!) trianArea a, (I.!) trianArea b) in  (a' ++ p : b' ++ [q], areaMult a' * areaMult b', map (\[_a,_p,_b,_q] -> (Append (Ind20 $ _a-1) $ singletonInd (Ind20 $ _b-1), Empty, Empty, Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q), Empty)) $ nub [[a,p,b,q], [a,q,b,p], [b,p,a,q], [b,q,a,p]]) | a <- [1..21], b <- [a..21], p <- [0..3], q <- [p..3]]
+          list = [ let (a',b') = ((I.!) trianArea a, (I.!) trianArea b) in  (a' ++ p : b' ++ [q], areaMult a' * areaMult b', map (\[_a,_p,_b,_q] -> (Empty, Append (Ind20 $ _a-1) $ singletonInd (Ind20 $ _b-1), Empty, Empty, Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q))) $ nub [[a,p,b,q], [a,q,b,p], [b,p,a,q], [b,q,a,p]]) | a <- [1..21], b <- [a..21], p <- [0..3], q <- [p..3]]
 
 --Ap:Bq:C
 
-areaList14Rom :: [( [Int], Int, [IndTupleAbs 3 0 0 0 2 0])]
+areaList14Rom :: [( [Int], Int, [IndTupleAbs 0 3 0 0 0 2])]
 areaList14Rom = list
       where
           trianArea = trianMapArea
-          list = [ let (a',b',c') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c) in  (a' ++ p : b' ++ q : c' , areaMult a' * areaMult b' * areaMult c', map (\[[_a,_p],[_b,_q]] -> (Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ c-1), Empty, Empty, Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q), Empty)) $ nub $ permutations [[a,p],[b,q]]) | a <- [1..21], b <- [a..21], c <- [1..21], p <- [0..3], q <- [0..3], not (a==b && p>q) ]
+          list = [ let (a',b',c') = ((I.!) trianArea a, (I.!) trianArea b, (I.!) trianArea c) in  (a' ++ p : b' ++ q : c' , areaMult a' * areaMult b' * areaMult c', map (\[[_a,_p],[_b,_q]] -> (Empty, Append (Ind20 $ _a-1) $ Append (Ind20 $ _b-1) $ singletonInd (Ind20 $ c-1), Empty, Empty, Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q))) $ nub $ permutations [[a,p],[b,q]]) | a <- [1..21], b <- [a..21], c <- [1..21], p <- [0..3], q <- [0..3], not (a==b && p>q) ]
 
 
 --now the same for the metric ansätze
 
 
 -- | Evaluation list for \(a^{A} \).
-metricList2 :: [( [Int], Int, [IndTupleAbs 0 0 1 0 0 0])]
+metricList2 :: [( [Int], Int, [IndTupleAbs 0 0 0 1 0 0])]
 metricList2 = list
       where
           trianMetric = trianMap2
-          list = [ let a' = (I.!) trianMetric a in (a', iMult2 a', [(Empty, Empty, singletonInd (Ind9 $ a-1), Empty, Empty, Empty)]) | a <- [1..10] ]
+          list = [ let a' = (I.!) trianMetric a in (a', iMult2 a', [(Empty, Empty, Empty, singletonInd (Ind9 $ a-1), Empty, Empty)]) | a <- [1..10] ]
 
 
 --(first metric indices)
 -- | Evaluation list for \(a^{AI} \).
-metricList4_1 :: [( [Int], Int, [IndTupleAbs 0 0 2 0 0 0])]
+metricList4_1 :: [( [Int], Int, [IndTupleAbs 0 0 0 2 0 0])]
 metricList4_1 =  list
       where
           trianMetric = trianMap2
-          list = [ let (a',i') = ((I.!) trianMetric a, (I.!) trianMetric i) in (a'++i', iMult2 a' * iMult2 i', [(Empty, Empty, Append (Ind9 $ a-1) (singletonInd (Ind9 $ i-1)), Empty, Empty, Empty)]) | a <- [1..10], i <- [1..10] ]
+          list = [ let (a',i') = ((I.!) trianMetric a, (I.!) trianMetric i) in (a'++i', iMult2 a' * iMult2 i', [(Empty, Empty, Empty, Append (Ind9 $ a-1) (singletonInd (Ind9 $ i-1)), Empty, Empty)]) | a <- [1..10], i <- [1..10] ]
 
 
 -- | Evaluation list for \(a^{A B}\). Note that also when using the abstract indices this ansatz still features the \( A \leftrightarrow B \) symmetry.
-metricList4_2 :: [( [Int], Int, [IndTupleAbs 0 0 2 0 0 0])]
+metricList4_2 :: [( [Int], Int, [IndTupleAbs 0 0 0 2 0 0])]
 metricList4_2 = list
       where
           trianMetric = trianMap2
-          list = [ let (a',b') = ((I.!) trianMetric a, (I.!) trianMetric b) in  (a' ++ b', iMult2 a' * iMult2 b', map (\[_a,_b] -> (Empty, Empty, Append (Ind9 $ _a-1) $ singletonInd (Ind9 $ _b-1), Empty, Empty, Empty)) $ nub $ permutations [a,b] )  | a <- [1..10], b <- [a..10]]
+          list = [ let (a',b') = ((I.!) trianMetric a, (I.!) trianMetric b) in  (a' ++ b', iMult2 a' * iMult2 b', map (\[_a,_b] -> (Empty, Empty, Empty, Append (Ind9 $ _a-1) $ singletonInd (Ind9 $ _b-1), Empty, Empty)) $ nub $ permutations [a,b] )  | a <- [1..10], b <- [a..10]]
 
 
 -- | Evaluation list for \(a^{Ap Bq}\). Note that also when using the abstract indices this ansatz still features the \( (Ap) \leftrightarrow (Bq) \) symmetry.
-metricList6_1 :: [( [Int], Int, [IndTupleAbs 0 0 2 0 2 0])]
+metricList6_1 :: [( [Int], Int, [IndTupleAbs 0 0 0 2 0 2])]
 metricList6_1 = list
       where
           trianMetric = trianMap2
-          list = [ let (a',b') = ((I.!) trianMetric a, (I.!) trianMetric b) in  (a' ++ p : b' ++ [q], iMult2 a' * iMult2 b', map (\[[_a,_p],[_b,_q]] -> (Empty, Empty, Append (Ind9 $ _a-1) $ singletonInd (Ind9 $ _b-1), Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q), Empty)) $ nub $ permutations [[a,p],[b,q]]) | a <- [1..10], b <- [a..10], p <- [0..3], q <- [0..3],  not (a==b && p>q)]
+          list = [ let (a',b') = ((I.!) trianMetric a, (I.!) trianMetric b) in  (a' ++ p : b' ++ [q], iMult2 a' * iMult2 b', map (\[[_a,_p],[_b,_q]] -> (Empty, Empty, Empty, Append (Ind9 $ _a-1) $ singletonInd (Ind9 $ _b-1), Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q))) $ nub $ permutations [[a,p],[b,q]]) | a <- [1..10], b <- [a..10], p <- [0..3], q <- [0..3],  not (a==b && p>q)]
 
 
 -- | Evaluation list for \(a^{ABI} \).
-metricList6_2 :: [( [Int], Int, [IndTupleAbs 0 0 3 0 0 0])]
+metricList6_2 :: [( [Int], Int, [IndTupleAbs 0 0 0 3 0 0])]
 metricList6_2 = list
       where
           trianMetric = trianMap2
-          list = [ let (a',b',i') = ((I.!) trianMetric a, (I.!) trianMetric b, (I.!) trianMetric i) in  (a' ++ b' ++ i', iMult2 a' * iMult2 b' * iMult2 i', [ (Empty, Empty, Append (Ind9 $ a-1) $ Append (Ind9 $ b-1) $ singletonInd (Ind9 $ i-1), Empty, Empty, Empty)] ) | a <- [1..10], b <- [1..10], i <- [1..10] ]
+          list = [ let (a',b',i') = ((I.!) trianMetric a, (I.!) trianMetric b, (I.!) trianMetric i) in  (a' ++ b' ++ i', iMult2 a' * iMult2 b' * iMult2 i', [ (Empty, Empty, Empty, Append (Ind9 $ a-1) $ Append (Ind9 $ b-1) $ singletonInd (Ind9 $ i-1), Empty, Empty)] ) | a <- [1..10], b <- [1..10], i <- [1..10] ]
 
 
 -- | Evaluation list for \(a^{ABC} \).  Note that also when using the abstract indices this ansatz still features the symmetry under arbitrary permutations of \( ABC\).
-metricList6_3 ::  [( [Int], Int, [IndTupleAbs 0 0 3 0 0 0])]
+metricList6_3 ::  [( [Int], Int, [IndTupleAbs 0 0 0 3 0 0])]
 metricList6_3 = list
       where
           trianMetric = trianMap2
-          list = [ let (a',b',c') = ((I.!) trianMetric a, (I.!) trianMetric b, (I.!) trianMetric c) in  (a' ++ b' ++ c', iMult2 a' * iMult2 b' * iMult2 c', map (\[_a,_b,_c] -> (Empty, Empty, Append (Ind9 $ _a-1) $ Append (Ind9 $ _b-1) $ singletonInd (Ind9 $ _c-1), Empty, Empty, Empty)) $ nub $ permutations [a,b,c] )| a <- [1..10], b <- [a..10], c <- [b..10] ]
+          list = [ let (a',b',c') = ((I.!) trianMetric a, (I.!) trianMetric b, (I.!) trianMetric c) in  (a' ++ b' ++ c', iMult2 a' * iMult2 b' * iMult2 c', map (\[_a,_b,_c] -> (Empty, Empty, Empty, Append (Ind9 $ _a-1) $ Append (Ind9 $ _b-1) $ singletonInd (Ind9 $ _c-1), Empty, Empty)) $ nub $ permutations [a,b,c] )| a <- [1..10], b <- [a..10], c <- [b..10] ]
 
 
 -- | Evaluation list for \(a^{ABp Cq}\). Note that also when using the abstract indices this ansatz still features the \( (Bp) \leftrightarrow (Cq) \) symmetry.
-metricList8_1 :: [( [Int], Int, [IndTupleAbs 0 0 3 0 2 0])]
+metricList8_1 :: [( [Int], Int, [IndTupleAbs 0 0 0 3 0 2])]
 metricList8_1 = list
       where
           trianMetric = trianMap2
-          list = [ let (a',b',c') = ((I.!) trianMetric a, (I.!) trianMetric b, (I.!) trianMetric c) in  (a' ++ b' ++ p : c' ++ [q], iMult2 a' * iMult2 b' * iMult2 c', map (\[[_b,_p],[_c,_q]] -> (Empty, Empty, Append (Ind9 $ a-1) $ Append (Ind9 $ _b-1) $ singletonInd (Ind9 $ _c-1), Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q), Empty)) $ nub $ permutations [[b,p],[c,q]]) | a <- [1..10], b <- [1..10], c <- [b..10], p <- [0..3], q <- [0..3], not (b==c && p>q) ]
+          list = [ let (a',b',c') = ((I.!) trianMetric a, (I.!) trianMetric b, (I.!) trianMetric c) in  (a' ++ b' ++ p : c' ++ [q], iMult2 a' * iMult2 b' * iMult2 c', map (\[[_b,_p],[_c,_q]] -> (Empty, Empty, Empty, Append (Ind9 $ a-1) $ Append (Ind9 $ _b-1) $ singletonInd (Ind9 $ _c-1), Empty, Append (Ind3 _p) $ singletonInd (Ind3 _q))) $ nub $ permutations [[b,p],[c,q]]) | a <- [1..10], b <- [1..10], c <- [b..10], p <- [0..3], q <- [0..3], not (b==c && p>q) ]
 
 
 -- | Evaluation list for \(a^{A B C I}\). Note that also when using the abstract indices this ansatz still features the \( (A) \leftrightarrow (B) \) symmetry.
-metricList8_2 :: [( [Int], Int, [IndTupleAbs 0 0 4 0 0 0])]
+metricList8_2 :: [( [Int], Int, [IndTupleAbs 0 0 0 4 0 0])]
 metricList8_2 = list
       where
           trianMetric = trianMap2
-          list = [ let (a',b',c',i') = ((I.!) trianMetric a, (I.!) trianMetric b, (I.!) trianMetric c, (I.!) trianMetric i) in ( a' ++ b' ++ c' ++ i', iMult2 a' * iMult2 b' * iMult2 c' * iMult2 i', map (\[_a,_b] -> (Empty, Empty, Append (Ind9 $ _a-1) $ Append (Ind9 $ _b-1) $ Append (Ind9 $ c-1) $ singletonInd (Ind9 $ i-1), Empty, Empty, Empty)) $ nub $ permutations [a,b] ) | a <- [1..10], b <- [a..10], c <- [1..10], i <- [1..10] ]
+          list = [ let (a',b',c',i') = ((I.!) trianMetric a, (I.!) trianMetric b, (I.!) trianMetric c, (I.!) trianMetric i) in ( a' ++ b' ++ c' ++ i', iMult2 a' * iMult2 b' * iMult2 c' * iMult2 i', map (\[_a,_b] -> (Empty, Empty, Empty, Append (Ind9 $ _a-1) $ Append (Ind9 $ _b-1) $ Append (Ind9 $ c-1) $ singletonInd (Ind9 $ i-1), Empty, Empty)) $ nub $ permutations [a,b] ) | a <- [1..10], b <- [a..10], c <- [1..10], i <- [1..10] ]
 
 --symLists for the ansätze
 
