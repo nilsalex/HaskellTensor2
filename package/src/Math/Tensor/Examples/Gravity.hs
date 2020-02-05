@@ -209,7 +209,7 @@ lorentzK3 = fromListT6 l
 -- | Flat area metric tensor. Can be obtained via the @'interJArea'@ intertwiner \( J^A_{abcd}\) as: \( N^A = J^A_{abcd} \left ( \eta^{ac} \eta^{bd} - \eta^{ad} \eta^{bc} - \epsilon^{abcd} \right ) \).
 flatArea :: ATens 1 0 0 0 0 0 (SField Rational)
 flatArea = fromListT6 $ map (\(i,v) -> ( (singletonInd $ Ind20 i, Empty, Empty, Empty, Empty, Empty), SField v))
-                        [(0,-1),(5,-1),(6,-1),(9,1),(11,-1),(12,-1),(15,1),(18,1),(20,1)]
+                        [(0,-1),(5,1),(6,-1),(9,-1),(11,-1),(12,1),(15,1),(18,1),(20,1)]
 
 
 --now the Area metric tensors
