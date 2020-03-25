@@ -10,7 +10,7 @@ cache:
 
 matrix:
   include:
-  - env: GHCVER=8.8.1 SOLVER=nightly
+  - env: GHCVER=8.8.3 SOLVER=nightly
     addons:
       apt:
         sources:
@@ -18,7 +18,16 @@ matrix:
         packages:
         - libblas-dev
         - liblapack-dev
-        - ghc-8.8.1
+        - ghc-8.8.3
+  - env: GHCVER=8.8.3 SOLVER=lts-15
+    addons:
+      apt:
+        sources:
+          - sourceline: 'ppa:hvr/ghc'
+        packages:
+        - libblas-dev
+        - liblapack-dev
+        - ghc-8.8.3
   - env: GHCVER=8.6.5 SOLVER=lts-14
     addons:
       apt:
@@ -55,8 +64,6 @@ matrix:
         - libblas-dev
         - liblapack-dev
         - ghc-8.0.2
-  allow_failures:
-  - env: GHCVER=8.8.1 SOLVER=nightly
 
 before_install:
   - mkdir -p ~/.local/bin
