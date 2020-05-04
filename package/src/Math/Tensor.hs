@@ -338,7 +338,7 @@ encodeTensor, decodeTensor,
 --
 -- ** Tensor Differentiation
 -- *** Partial Derivatives
-partial, partialSymbolic, solveSystem6, redefineVarsSystem6, tryAsATens, fromRref, compRows
+partial, partialSymbolic, solveSystem6, redefineVarsSystem6, tryAsATens, fromRref, fromRrefRev, compRows
 ) where
 
 import Data.Foldable (toList)
@@ -3114,6 +3114,12 @@ fromRref ref = I.fromList assocs
         rows   = HM.toLists ref
         assocs = mapMaybe fromRow rows
 
+fromRrefRev :: HM.Matrix HM.Z -> Solution
+fromRrefRev ref = I.fromList assocs
+    where
+        rows   = fmap reverse $ HM.toLists ref
+        assocs = mapMaybe fromRowRev rows
+
 fromRow :: Integral a => [a] -> Maybe (Int, AnsVarR)
 fromRow xs = case assocs of
                []             -> Nothing
@@ -3122,6 +3128,15 @@ fromRow xs = case assocs of
                                  in Just (i, AnsVar $ I.fromList assocs'')
     where
         assocs = filter ((/=0) . snd) $ zip [1..] xs
+
+fromRowRev :: Integral a => [a] -> Maybe (Int, AnsVarR)
+fromRowRev xs = case assocs of
+                  []             -> Nothing
+                  [(i, _)]       -> Just (i, AnsVar I.empty)
+                  (i, v):assocs' -> let assocs'' = map (\(i, v') -> (i, SField $ - (fromIntegral v') / (fromIntegral v))) assocs'
+                                    in Just (i, AnsVar $ I.fromList assocs'')
+    where
+        assocs = reverse $ filter ((/=0) . snd) $ zip [1..] xs
 
 applySolution :: Solution -> AnsVarR -> AnsVarR
 applySolution s (AnsVar m) = AnsVar $
