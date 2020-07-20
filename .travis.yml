@@ -89,5 +89,5 @@ install:
   - stack --no-terminal --skip-ghc-check build
 
 script:
-  - if [ $GHCVER != "8.6.5" ]; then stack --no-terminal --skip-ghc-check haddock; fi
+  - stack --no-terminal --skip-ghc-check haddock
   - stack --no-terminal --skip-ghc-check test

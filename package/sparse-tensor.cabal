@@ -17,11 +17,16 @@ author:              Tobias Reinhart and Nils Alex
 maintainer:          tobi.reinhart@fau.de, nils.alex@fau.de
 copyright:           2019 Tobias Reinhart and Nils Alex
 category:            Data, Math, Algebra
-build-type:          Simple
+build-type:          Custom
 cabal-version:       1.24
 extra-source-files:
     README.md
     CHANGELOG.md
+
+custom-setup
+  setup-depends:
+    base >= 4.9 && < 5,
+    Cabal >= 1.24 && < 3.4
 
 source-repository head
   type:     git
